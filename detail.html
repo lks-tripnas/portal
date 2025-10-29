@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Berita</title>
+  <link rel="icon" href="assets/favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Share+Tech+Mono&display=swap"
+    rel="stylesheet">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#003366">
+  <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="/assets/favicon-180x180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="stylesheet" href="css/detail.css">
+</head>
+
+<body>
+  <header>
+    <h2><a href="index.html" id="homeTitle" style="text-decoration:none;color:inherit;">news.t-o-m.my.id</a></h2>
+    <a href="javascript:history.back()" class="btn">Kembali</a>
+  </header>
+
+  <button class="theme-toggle" id="themeToggle">☀️</button>
+  <main id="detailContainer"></main>
+  <footer>Hak Cipta © 2025 t-o-m.my.id</footer>
+
+  <div id="lightbox" onclick="this.style.display='none'">
+    <span id="closeBtn" onclick="document.getElementById('lightbox').style.display='none'">&times;</span>
+    <img id="lightbox-img">
+  </div>
+
+  <div id="loadingOverlay">
+    <div class="loader"></div>
+    <p>Memuat konten...</p>
+  </div>
+  <div id="customModal">
+    <div class="modal-box">
+      <p id="modalMessage">Pesan notifikasi</p><button onclick="closeModal()" class="btn">OK</button>
+    </div>
+  </div>
+  <script type="module" src="js/detail.js"></script>
+</body>
+
+
+</html>

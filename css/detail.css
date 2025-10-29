@@ -1,0 +1,319 @@
+    :root {
+        --bg-light: #f9f9fb;
+        --bg-dark: #121212;
+        --text-light: #222;
+        --text-dark: #eee;
+        --card-light: #fff;
+        --card-dark: #1e1e1e;
+        --accent: #f7b500;
+        --accent-gradient: linear-gradient(135deg, #ffd84d, #f7b500);
+    }
+
+    body {
+        margin: 0;
+        font-family: 'Poppins', sans-serif;
+        background: var(--bg-light);
+        color: var(--text-light);
+        transition: .3s;
+    }
+
+    body.dark {
+        background: var(--bg-dark);
+        color: var(--text-dark);
+    }
+
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: .6rem 1rem;
+        backdrop-filter: blur(12px);
+        background: rgba(255, 255, 255, .7);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        border-bottom: 1px solid rgba(0, 0, 0, .05);
+    }
+
+    body.dark header {
+        background: rgba(18, 18, 18, .8);
+        border-bottom: 1px solid rgba(255, 255, 255, .1);
+    }
+
+    header h2 {
+        margin: 0;
+        font-size: 1.1rem;
+        line-height: 1.4;
+    }
+
+    /* font header retro */
+    header h2 {
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 0.9rem;
+        /* sedikit lebih kecil */
+    }
+
+    .btn {
+        display: inline-block;
+        padding: .4rem .8rem;
+        font-size: .8rem;
+        border-radius: 14px;
+        background: var(--accent-gradient);
+        color: #000;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, .25);
+        transition: transform .2s;
+    }
+
+    .btn:hover {
+        transform: scale(1.05);
+    }
+
+    .theme-toggle {
+        position: fixed;
+        bottom: 12px;
+        left: 12px;
+        z-index: 2000;
+        background: var(--card-light);
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, .2);
+    }
+
+    body.dark .theme-toggle {
+        background: var(--card-dark);
+        color: #fff;
+    }
+
+    main {
+        padding: 1.5rem;
+        max-width: 800px;
+        margin: auto;
+    }
+
+    .card {
+        background: var(--card-light);
+        margin-bottom: 1.2rem;
+        border-radius: 18px;
+        padding: 1.2rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, .05);
+    }
+
+    body.dark .card {
+        background: var(--card-dark);
+    }
+
+    .date {
+        font-size: .85rem;
+        color: #777;
+        margin-bottom: .6rem;
+    }
+
+    body.dark .date {
+        color: #aaa;
+    }
+
+    .detail-img {
+        width: 100%;
+        max-width: 700px;
+        max-height: 400px;
+        border-radius: 12px;
+        margin: 1rem auto;
+        display: block;
+        object-fit: cover;
+        cursor: zoom-in;
+    }
+
+    footer {
+        text-align: center;
+        padding: 1rem;
+        font-size: .9rem;
+        opacity: .7;
+    }
+
+    #lightbox {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, .85);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+    }
+
+    #lightbox img {
+        max-width: 90%;
+        max-height: 90%;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, .5);
+    }
+
+    #closeBtn {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        font-size: 2rem;
+        font-weight: bold;
+        color: #fff;
+        cursor: pointer;
+        z-index: 2100;
+    }
+
+    #loadingOverlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(255, 255, 255, .85);
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 500;
+        color: #333;
+        z-index: 3000;
+    }
+
+    body.dark #loadingOverlay {
+        background: rgba(18, 18, 18, .85);
+        color: #eee;
+    }
+
+    .loader {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid var(--accent);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    #customModal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, .5);
+        z-index: 4000;
+    }
+
+    .modal-box {
+        background: #fff !important;
+        color: var(--text-light);
+        padding: 1.5rem;
+        border-radius: 16px;
+        max-width: 300px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, .2);
+        animation: fadeIn .3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    body.dark .modal-box {
+        background: #1e1e1e !important;
+        color: var(--text-dark);
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(.9);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .modal-box button {
+        margin-top: 1rem;
+        align-self: center;
+    }
+
+    /* ===== Tambahan kecil untuk ikon dokumen ===== */
+    .doc-title {
+        margin-top: 1.2rem;
+        font-weight: 600;
+        font-size: .95rem;
+    }
+
+    .doc-item {
+        margin-top: .6rem;
+        display: flex;
+        align-items: center;
+        gap: .45rem;
+        font-size: .95rem;
+        transition: transform .2s ease;
+    }
+
+    .doc-item span {
+        font-size: 1.3rem;
+        transition: transform .2s ease;
+    }
+
+    .doc-item:hover span {
+        transform: scale(1.25);
+    }
+
+    .doc-item a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .doc-item a:hover {
+        color: var(--accent);
+    }
+
+    .pdf span {
+        color: #d93025;
+    }
+
+    .word span {
+        color: #2b579a;
+    }
+
+    .excel span {
+        color: #217346;
+    }
+
+    .ppt span {
+        color: #d24726;
+    }
+
+    .gdoc span {
+        color: #4285f4;
+    }
+
+    .zip span {
+        color: #6a1b9a;
+    }
+
+    .card p {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }

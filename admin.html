@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>news.t-o-m.my.id — Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#003366">
+  <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="/assets/favicon-180x180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+
+<body>
+  <header>
+    <h1>Admin News</h1>
+  </header>
+  <main>
+    <!-- LOGIN -->
+    <div id="loginCard" class="card">
+      <h3>Login Admin</h3>
+      <form id="loginForm">
+        <input type="email" id="loginEmail" placeholder="Email" required>
+        <input type="password" id="loginPassword" placeholder="Password" required>
+        <button id="loginBtn" type="submit" class="btn">Masuk</button>
+      </form>
+      <div id="loginMsg" class="muted mt"></div>
+    </div>
+
+    <!-- FORM KONTEN -->
+    <div id="formCard" class="card hidden">
+      <h3 id="formTitle">Tambah Konten</h3>
+      <div class="row">
+        <div>
+          <label>Judul</label>
+          <input type="text" id="fJudul" placeholder="Judul berita/pengumuman/peraturan">
+        </div>
+        <div>
+          <label>Kategori</label>
+          <select id="fKategori">
+            <option>Berita</option>
+            <option>Pengumuman</option>
+            <option>Peraturan</option>
+          </select>
+        </div>
+      </div>
+
+      <label>Isi Konten</label>
+      <textarea id="fIsi" placeholder="Tulis isi lengkap di sini..."></textarea>
+
+      <!-- UPLOAD GAMBAR ATAU LINK DOKUMEN -->
+      <div class="row" id="uploadRow">
+        <div id="uploadContainer">
+          <label>Upload Gambar</label>
+          <input type="file" id="fFile" accept="image/*" multiple>
+          <div class="muted">Anda bisa pilih lebih dari 1 gambar.</div>
+          <div id="oldImages"></div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Status</label>
+          <select id="fStatus">
+            <option>Aktif</option>
+            <option>Arsip</option>
+          </select>
+        </div>
+        <div>
+          <label>Slug (opsional)</label>
+          <input type="text" id="fSlug" placeholder="contoh-judul-berita">
+        </div>
+      </div>
+
+      <div class="right mt">
+        <button class="btn secondary" id="resetBtn">Bersihkan</button>
+        <button class="btn" id="saveBtn">Simpan</button>
+        <button class="btn secondary" id="logoutBtn">Logout</button>
+      </div>
+      <div id="formMsg" class="muted mt"></div>
+    </div>
+
+    <!-- LIST KONTEN -->
+    <div id="listCard" class="card hidden">
+      <h3 style="text-align:center;">Daftar Konten</h3>
+
+      <!-- Search + Filter + Sort (center) -->
+      <div id="searchSortRow">
+        <input id="searchAdmin" type="text" placeholder="Cari judul atau isi konten..." />
+        <div>
+          <select id="filterKategori">
+            <option value="">Semua Kategori</option>
+            <option>Berita</option>
+            <option>Pengumuman</option>
+            <option>Peraturan</option>
+          </select>
+          <select id="sortSelect">
+            <option value="terbaru">Urutkan: Terbaru</option>
+            <option value="terlama">Urutkan: Terlama</option>
+            <option value="aktif">Status: Aktif</option>
+            <option value="arsip">Status: Arsip</option>
+            <option value="draft">Status: Draft</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="muted mt">Klik "Edit" untuk memuat data ke form. "Arsipkan" untuk menyembunyikan dari publik. "Hapus"
+        untuk menghapus permanen.</div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Judul</th>
+            <th>Kategori</th>
+            <th>Tanggal</th>
+            <th>Status</th>
+            <th>Media</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- LOADING + MODAL -->
+  <div id="loadingOverlay">
+    <div class="spinner"></div>
+  </div>
+  <div id="customModal">
+    <div class="modal-box">
+      <p id="modalMessage">Pesan notifikasi</p><button onclick="closeModal()" class="btn">OK</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/admin.js"></script>
+</body>
+
+
+</html>

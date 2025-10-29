@@ -1,0 +1,24 @@
+{
+  "name": "News — by @TOMMY",
+  "short_name": "News",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#003366",
+  "description": "Portal berita dan informasi oleh t-o-m.my.id",
+  "icons": [
+    { "src": "/assets/favicon-72x72.png", "sizes": "72x72", "type": "image/png" },
+    { "src": "/assets/favicon-96x96.png", "sizes": "96x96", "type": "image/png" },
+    { "src": "/assets/favicon-128x128.png", "sizes": "128x128", "type": "image/png" },
+    { "src": "/assets/favicon-144x144.png", "sizes": "144x144", "type": "image/png" },
+    { "src": "/assets/favicon-180x180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/assets/favicon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable any" },
+    { "src": "/assets/favicon-256x256.png", "sizes": "256x256", "type": "image/png" },
+    { "src": "/assets/favicon-384x384.png", "sizes": "384x384", "type": "image/png" },
+    { "src": "/assets/favicon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/favicon.ico", "sizes": "any", "type": "image/x-icon" }
+  ],
+  "id": "news.t-o-m.my.id"
+}
