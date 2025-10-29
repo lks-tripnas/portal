@@ -19,6 +19,7 @@
   <header>
     <h1>Admin News</h1>
   </header>
+
   <main>
     <!-- LOGIN -->
     <div id="loginCard" class="card">
@@ -52,7 +53,6 @@
       <label>Isi Konten</label>
       <textarea id="fIsi" placeholder="Tulis isi lengkap di sini..."></textarea>
 
-      <!-- UPLOAD GAMBAR ATAU LINK DOKUMEN -->
       <div class="row" id="uploadRow">
         <div id="uploadContainer">
           <label>Upload Gambar</label>
@@ -88,7 +88,6 @@
     <div id="listCard" class="card hidden">
       <h3 style="text-align:center;">Daftar Konten</h3>
 
-      <!-- Search + Filter + Sort (center) -->
       <div id="searchSortRow">
         <input id="searchAdmin" type="text" placeholder="Cari judul atau isi konten..." />
         <div>
@@ -108,8 +107,10 @@
         </div>
       </div>
 
-      <div class="muted mt">Klik "Edit" untuk memuat data ke form. "Arsipkan" untuk menyembunyikan dari publik. "Hapus"
-        untuk menghapus permanen.</div>
+      <div class="muted mt">
+        Klik "Edit" untuk memuat data ke form. "Arsipkan" untuk menyembunyikan dari publik. "Hapus"
+        untuk menghapus permanen.
+      </div>
 
       <table>
         <thead>
@@ -126,18 +127,32 @@
     </div>
   </main>
 
-  <!-- LOADING + MODAL -->
   <div id="loadingOverlay">
     <div class="spinner"></div>
   </div>
   <div id="customModal">
     <div class="modal-box">
-      <p id="modalMessage">Pesan notifikasi</p><button onclick="closeModal()" class="btn">OK</button>
+      <p id="modalMessage"></p><button onclick="closeModal()" class="btn">OK</button>
     </div>
   </div>
 
+  <!-- === TinyMCE Editor === -->
+  <script src="https://cdn.tiny.cloud/1/k5agrgsc9kksius35vr1ejeujyr03517tvrgdd3lvqiklocg/tinymce/7/tinymce.min.js"
+    referrerpolicy="origin"></script>
+  <script>
+    tinymce.init({
+      selector: '#fIsi',
+      menubar: false,
+      plugins: 'link lists code paste',
+      toolbar: 'undo redo | styles | bold italic underline | bullist numlist | link | removeformat | code',
+      height: 400,
+      branding: false,
+      paste_as_text: false,
+      content_style: "body { font-family:Poppins,sans-serif; font-size:14px; line-height:1.6; }"
+    });
+  </script>
+
   <script type="module" src="js/admin.js"></script>
 </body>
-
 
 </html>
