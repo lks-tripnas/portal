@@ -210,14 +210,13 @@ if (homeTitle) {
 /* === Tombol "Kembali" manual agar state index dipulihkan === */
 const backBtn = document.querySelector("a.btn[href='javascript:history.back()']");
 if (backBtn) {
-    backBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        sessionStorage.setItem("fromDetail", "yes");
-        const lastCategory = sessionStorage.getItem("lastCategory") || "Berita";
-        if (!sessionStorage.getItem("pageState")) {
-            sessionStorage.setItem("pageState", JSON.stringify({ scroll: 0, category: lastCategory, loadedCount: 10 }));
-        }
-        window.location.href = "index.html";
-    });
+  backBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    // Tandai bahwa user kembali dari detail
+    sessionStorage.setItem("fromDetail", "yes");
+    // Gunakan navigasi history agar state sessionStorage tetap hidup
+    history.back();
+  });
 }
+
 

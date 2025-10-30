@@ -62,6 +62,16 @@ if (sessionStorage.getItem("forceHome") === "true") {
 let currentCategory = "Berita", lastVisible = null, isLoading = false, reachedEnd = false;
 const PAGE_SIZE = 10;
 
+// === Simpan posisi scroll secara realtime ===
+window.addEventListener("scroll", () => {
+  const state = {
+    scroll: window.scrollY,
+    category: currentCategory,
+    loadedCount: document.querySelectorAll("#contentList .card").length
+  };
+  sessionStorage.setItem("pageState", JSON.stringify(state));
+});
+
 /* LOAD MORE BUTTON */
 const loadMoreContainer = document.createElement("div");
 loadMoreContainer.style.textAlign = "center";
@@ -217,8 +227,6 @@ if (hamburger && nav) {
         hamburger.classList.toggle("active");
         document.body.classList.toggle("nav-open");
     });
-
-
 
     // Tutup menu saat user pilih kategori
     nav.querySelectorAll("a[data-tab]").forEach(a => {
