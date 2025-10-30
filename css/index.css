@@ -9,6 +9,11 @@
             --accent-gradient: linear-gradient(135deg, #ffd84d, #f7b500);
         }
 
+        html,
+        body {
+            min-height: 100vh;
+        }
+
         body {
             margin: 0;
             font-family: 'Poppins', sans-serif;
@@ -52,6 +57,7 @@
             align-items: center;
         }
 
+
         nav a {
             padding: .4rem 1rem;
             border-radius: 12px;
@@ -61,10 +67,43 @@
             transition: background .2s, color .2s;
         }
 
+
+
         nav a.active,
         nav a:hover {
             background: var(--accent);
             color: #000;
+        }
+
+        /* ==== NAVBAR SCROLLABLE ==== */
+        header nav {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: thin;
+            /* Firefox */
+            scrollbar-color: var(--accent) transparent;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        header nav::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        header nav::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 3px;
+        }
+
+        header nav::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        /* Biar tidak geser aneh saat scroll */
+        header nav a {
+            flex: 0 0 auto;
+            padding: 0.6rem 1rem;
         }
 
         .search-toggle {
@@ -328,4 +367,392 @@
             padding: 0.3rem 0.75rem;
             font-size: 0.8rem;
             border-radius: 10px;
+        }
+
+        /* ==== HEADER ICONS WRAP ==== */
+        .header-icons {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        /* ==== Hamburger icon animated ==== */
+        .hamburger {
+            display: none;
+            width: 26px;
+            height: 20px;
+            position: relative;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .hamburger span {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: currentColor;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger span:nth-child(1) {
+            top: 0;
+        }
+
+        .hamburger span:nth-child(2) {
+            top: 8px;
+        }
+
+        .hamburger span:nth-child(3) {
+            bottom: 0;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg);
+            top: 8px;
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg);
+            bottom: 8px;
+        }
+
+        /* ==== Mobile layout ==== */
+        @media (max-width: 600px) {
+            header {
+                padding: 0.8rem 1rem;
+            }
+
+            .header-icons {
+                position: absolute;
+                top: 10px;
+                right: 14px;
+                gap: 0.8rem;
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            nav {
+                position: fixed;
+                top: 60px;
+                right: 10px;
+                left: 10px;
+                display: flex;
+                flex-direction: column;
+                background: rgba(255, 255, 255, 0.92);
+                backdrop-filter: blur(10px);
+                border-radius: 16px;
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+                padding: 1rem;
+                transform: translateY(-120%);
+                transition: transform 0.3s ease;
+                z-index: 1000;
+            }
+
+            body.dark nav {
+                background: rgba(18, 18, 18, 0.92);
+            }
+
+            nav.open {
+                transform: translateY(0);
+            }
+
+            nav a {
+                text-align: left;
+                padding: 0.7rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* ==== FORCE SHOW FLOATING SEARCH ICON (MOBILE) ==== */
+        @media (max-width: 600px) {
+
+            /* pastikan tampil */
+            #searchToggle {
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+
+                position: fixed !important;
+                bottom: 80px !important;
+                left: 20px !important;
+
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                background: var(--accent-gradient);
+                color: #000;
+                font-size: 1.25rem;
+                align-items: center;
+                justify-content: center;
+
+                box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+                cursor: pointer;
+                z-index: 3000 !important;
+                transition: transform 0.25s ease, box-shadow 0.25s ease;
+            }
+
+            @media (max-width: 600px) {
+                #searchToggle {
+                    background: var(--card-light) !important;
+                    color: inherit !important;
+                    width: 36px !important;
+                    height: 36px !important;
+                    font-size: 1rem !important;
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, .12) !important;
+                }
+
+                body.dark #searchToggle {
+                    background: var(--card-dark) !important;
+                    color: var(--text-dark) !important;
+                    box-shadow: 0 2px 6px rgba(255, 255, 255, .12) !important;
+                }
+            }
+
+            #searchToggle:hover {
+                transform: scale(1.08);
+                box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+            }
+
+            body.dark #searchToggle {
+                background: var(--card-dark);
+                color: var(--text-dark);
+                box-shadow: 0 4px 14px rgba(255, 255, 255, 0.15);
+            }
+        }
+
+        /* ==== FIX HEADER LAYOUT & FULLSCREEN VIEW ==== */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            padding: 0.8rem 1rem;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .header-icons {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        /* hamburger tetap tersembunyi di desktop */
+        .hamburger {
+            display: none;
+        }
+
+        /* tampilkan hamburger di mobile */
+        @media (max-width: 600px) {
+            .hamburger {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                width: 26px;
+                height: 18px;
+                cursor: pointer;
+                z-index: 2000;
+            }
+
+            .hamburger span {
+                display: block;
+                height: 3px;
+                width: 100%;
+                background: currentColor;
+                border-radius: 2px;
+                transition: all 0.3s ease;
+            }
+
+            .hamburger.active span:nth-child(1) {
+                transform: rotate(45deg);
+                transform-origin: center;
+                top: 6px;
+                position: relative;
+            }
+
+            .hamburger.active span:nth-child(2) {
+                opacity: 0;
+            }
+
+            .hamburger.active span:nth-child(3) {
+                transform: rotate(-45deg);
+                transform-origin: center;
+                bottom: 6px;
+                position: relative;
+            }
+
+            @media (max-width: 600px) {
+
+                /* overlay gelap di belakang menu */
+                #navOverlay {
+                    position: fixed;
+                    inset: 0;
+                    background: rgba(0, 0, 0, 0.4);
+                    backdrop-filter: blur(3px);
+                    opacity: 0;
+                    pointer-events: none;
+                    transition: opacity 0.25s ease;
+                    z-index: 1999;
+                }
+
+                #navOverlay.show {
+                    opacity: 1;
+                    pointer-events: auto;
+                }
+
+                nav {
+                    position: fixed;
+                    top: 50%;
+                    left: 7.5%;
+                    transform: translate(-50%, -50%) scale(0.9);
+                    width: 85vw;
+                    max-width: 420px;
+                    background: rgba(255, 255, 255, 0.96);
+                    backdrop-filter: blur(16px);
+                    border-radius: 20px;
+                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+                    padding: 1.2rem;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: stretch;
+                    opacity: 0;
+                    pointer-events: none;
+                    transition: opacity 0.25s ease, transform 0.25s ease;
+                    z-index: 3000;
+                    box-sizing: border-box;
+                }
+
+                nav.open {
+                    transform: translate(-50%, -50%) scale(1);
+                    opacity: 1;
+                    pointer-events: auto;
+                }
+
+                body.dark nav {
+                    background: rgba(18, 18, 18, 0.95);
+                }
+
+                nav a {
+                    text-align: center;
+                    padding: 0.8rem 1rem;
+                    font-size: 0.9rem;
+                    border-radius: 12px;
+                }
+
+                html,
+                body {
+                    overflow-x: hidden;
+                }
+            }
+
+            nav.open {
+                transform: translateY(0);
+            }
+
+            body.dark nav {
+                background: rgba(18, 18, 18, 0.95);
+            }
+
+            nav a {
+                padding: 0.7rem 1rem;
+                text-align: left;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* ==== STRUKTUR ORGANISASI ==== */
+        .struktur-card img.thumb {
+            max-height: 300px;
+            object-fit: contain;
+            background: #fafafa;
+            padding: 0.5rem;
+        }
+
+        body.dark .struktur-card img.thumb {
+            background: #1a1a1a;
+        }
+
+        /* ==== SITE LOGO + TITLE ==== */
+        .site-title {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .site-title img.site-logo {
+            height: 50px;
+            width: auto;
+            border-radius: 4px;
+            vertical-align: middle;
+            object-fit: contain;
+        }
+
+        @media (max-width: 600px) {
+            .site-title img.site-logo {
+                height: 50px;
+            }
+
+            .site-title span {
+                font-size: 0.95rem;
+            }
+        }
+
+        /* ==== RESPONSIVE TITLE LAYOUT ==== */
+
+        /* Saat lebar viewport makin kecil, biarkan teks turun di bawah logo */
+        @media (max-width: 900px) {
+            .site-title {
+                flex-direction: column;
+                /* ubah jadi vertikal */
+                align-items: center;
+                /* teks & logo di tengah */
+                text-align: center;
+                gap: 0.3rem;
+            }
+
+            .site-title img.site-logo {
+                height: 60px;
+                /* logo sedikit lebih besar */
+            }
+
+            .site-title span {
+                display: block;
+                font-size: 1rem;
+                /* teks masih terbaca nyaman */
+                line-height: 1.2;
+                margin-top: 0.6rem;
+                /* sedikit jarak tambahan vertikal */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .site-title {
+                gap: 0.5rem;
+                /* tambahkan jarak antara logo dan teks */
+            }
+
+            .site-title img.site-logo {
+                height: 14vw;
+            }
+
+            .site-title span {
+                font-size: 0.95rem;
+                margin-top: 0.6rem;
+                /* sedikit jarak tambahan vertikal */
+            }
         }

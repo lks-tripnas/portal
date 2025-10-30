@@ -3,8 +3,9 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>news.t-o-m.my.id</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <title>LKS Tripartit Nasional</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Share+Tech+Mono&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="css/index.css">
@@ -16,16 +17,39 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 
+<div id="navOverlay"></div>
+
+
 <body>
   <header>
-    <h2><a href="index.html" id="homeTitle" style="text-decoration:none;color:inherit;">news.t-o-m.my.id</a></h2>
-    <nav>
+    <div class="header-left">
+      <span id="searchToggle" class="search-toggle" title="Cari">🔍</span>
+<h2 class="site-title">
+  <a href="index.html" id="homeTitle" style="text-decoration:none;color:inherit;">
+    <img src="/lkstripnas.png" alt="Logo LKS Tripnas" class="site-logo">
+    <span>LKS Tripartit Nasional</span>
+  </a>
+</h2>
+
+    </div>
+
+    <div class="header-icons">
+      <div id="hamburger" class="hamburger">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <nav id="mainNav">
       <a href="#" class="active" data-tab="Berita">Berita</a>
       <a href="#" data-tab="Pengumuman">Pengumuman</a>
+      <a href="#" data-tab="Agenda">Agenda</a>
       <a href="#" data-tab="Peraturan">Peraturan / Dokumen Lainnya</a>
-      <span id="searchToggle" class="search-toggle" title="Cari">🔍</span>
+      <a href="#" data-tab="Struktur Organisasi">Struktur Organisasi</a>
     </nav>
   </header>
+
+
+
 
   <div id="searchBarWrap">
     <input id="searchInput" type="text" placeholder="Cari judul atau isi konten...">
@@ -37,7 +61,7 @@
     <div id="noResults" class="no-results" style="display:none;">Tidak ada hasil untuk pencarian ini.</div>
   </main>
 
-  <footer>Hak Cipta © 2025 t-o-m.my.id</footer>
+  <footer>Hak Cipta © 2025 LKS Tripartit Nasional</footer>
   <div id="cacheStatus">Memuat semua berita...</div>
 
   <script type="module" src="js/index.js"></script>

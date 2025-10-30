@@ -61,6 +61,7 @@ async function loadDetail() {
     const id = params.get("id");
     const slug = params.get("slug");
 
+
     if (!id && !slug) {
         document.getElementById("detailContainer").innerHTML = "<p>❌ Tidak ada ID atau slug.</p>";
         return;
@@ -120,20 +121,66 @@ async function loadDetail() {
             docSection = `<div class="doc-title">Dokumen terkait:</div>${items}`;
         }
 
+        /* === AGENDA === */
+        let agendaSection = "";
+        if (d.category === "Agenda") {
+            const tanggal = d.tanggal
+                ? new Date(d.tanggal).toLocaleDateString("id-ID", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric"
+                })
+                : null;
+            const jam = d.jam || "";
+            const lokasi = d.lokasi || "";
+
+            agendaSection = `
+    <div class="agenda-info">
+      ${tanggal ? `<div class="agenda-item">🗓️ <strong>${tanggal}</strong></div>` : ""}
+      ${jam ? `<div class="agenda-item">🕓 ${jam} WIB</div>` : ""}
+      ${lokasi ? `<div class="agenda-item">📍 ${lokasi}</div>` : ""}
+    </div>`;
+        }
+
+        /* === STRUKTUR ORGANISASI === */
+        let strukturSection = "";
+        if (d.category === "Struktur Organisasi") {
+            const img = d.imageUrl
+                ? `<img src="${d.imageUrl}" class="struktur-img" onclick="showLightbox(this.src)">`
+                : (d.images && d.images.length > 0
+                    ? `<img src="${d.images[0]}" class="struktur-img" onclick="showLightbox(this.src)">`
+                    : "");
+            strukturSection = img;
+        }
+
         /* === RENDER === */
+        let strukturImg = "";
+        if (d.category === "Struktur Organisasi") {
+            const img = d.imageUrl
+                ? `<img src="${d.imageUrl}" class="struktur-img" onclick="showLightbox(this.src)">`
+                : (d.images && d.images.length > 0
+                    ? `<img src="${d.images[0]}" class="struktur-img" onclick="showLightbox(this.src)">`
+                    : "");
+            strukturImg = img;
+        }
+
         document.getElementById("detailContainer").innerHTML = `
-      <div class="card">
-        ${imageAtas}
-        <h2>${d.title}</h2>
-        <div class="date">
-          ${formatWIB(d.createdAt)}
-          ${d.updatedAt ? `<div style="font-size:.7rem;opacity:.75;">diubah ${formatWIB(d.updatedAt)}</div>` : ""}
-        </div>
-        <div class="post-content">${d.content || ""}</div>
-        ${docSection}
-        ${imageBawah}
-      </div>
-    `;
+  <div class="card">
+    ${d.category !== "Struktur Organisasi" ? imageAtas : ""}
+    <h2>${d.title}</h2>
+    <div class="date">
+      ${formatWIB(d.createdAt)}
+      ${d.updatedAt ? `<div style="font-size:.7rem;opacity:.75;">diubah ${formatWIB(d.updatedAt)}</div>` : ""}
+    </div>
+    ${agendaSection}
+    <div class="post-content">${d.content || ""}</div>
+    ${docSection}
+    ${d.category === "Struktur Organisasi" ? strukturImg : imageBawah}
+  </div>
+`;
+
+
     } catch (err) {
         hideLoading();
         showModal("Gagal memuat detail: " + err.message);

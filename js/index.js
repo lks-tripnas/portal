@@ -78,17 +78,92 @@ function formatWIB(ts) {
     } catch { return ""; }
 }
 function renderCard(id, d) {
-    const href = (d.slug && d.slug.trim()) ? `detail.html?slug=${encodeURIComponent(d.slug)}` : `detail.html?id=${id}`;
-    const thumb = (d.images && d.images.length > 0) ? `<img src="${d.images[0]}" class="thumb">` : (d.imageUrl ? `<img src="${d.imageUrl}" class="thumb">` : "");
+    const href = (d.slug && d.slug.trim())
+        ? `detail.html?slug=${encodeURIComponent(d.slug)}`
+        : `detail.html?id=${id}`;
+
+    const thumb =
+        d.images && d.images.length > 0
+            ? `<img src="${d.images[0]}" class="thumb">`
+            : d.imageUrl
+                ? `<img src="${d.imageUrl}" class="thumb">`
+                : "";
+
+    // === Peraturan: tampilkan jumlah dokumen ===
     if (d.category === "Peraturan") {
         const totalDocs = Array.isArray(d.links) ? d.links.length : 0;
-        return `<div class="card"><h3>${d.title}</h3><div class="date">${formatWIB(d.createdAt)}${d.updatedAt ? `<div style="font-size:.6rem;opacity:.7;">di-edit pada ${formatWIB(d.updatedAt)}</div>` : ""}</div>
-    <p>${(d.content || "").substring(0, 150)}...</p>${totalDocs > 0 ? `<div class="doc-info">📄 ${totalDocs} dokumen</div>` : ""}
-    <a href="${href}" class="btn">Baca Selengkapnya</a></div>`;
+        return `
+      <div class="card">
+        <h3>${d.title}</h3>
+        <div class="date">
+          ${formatWIB(d.createdAt)}
+          ${d.updatedAt ? `<div style="font-size:.6rem;opacity:.7;">di-edit pada ${formatWIB(d.updatedAt)}</div>` : ""}
+        </div>
+        <p>${(d.content || "").substring(0, 150)}...</p>
+        ${totalDocs > 0 ? `<div class="doc-info">📄 ${totalDocs} dokumen</div>` : ""}
+        <a href="${href}" class="btn">Baca Selengkapnya</a>
+      </div>`;
     }
-    return `<div class="card">${thumb}<h3>${d.title}</h3><div class="date">${formatWIB(d.createdAt)}${d.updatedAt ? `<div style="font-size:.6rem;opacity:.7;">di-edit pada ${formatWIB(d.updatedAt)}</div>` : ""}</div>
-  <p>${(d.content || "").substring(0, 120)}...</p><a href="${href}" class="btn">Baca Selengkapnya</a></div>`;
+
+    // === Agenda: tampilkan tanggal, jam, lokasi ===
+    if (d.category === "Agenda") {
+        const tanggal = d.tanggal
+            ? new Date(d.tanggal).toLocaleDateString("id-ID", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+            })
+            : null;
+        const jam = d.jam || "";
+        const lokasi = d.lokasi || "";
+
+        return `
+      <div class="card">
+        <h3>${d.title}</h3>
+        <div class="agenda-meta">
+          ${tanggal ? `<div>🗓️ ${tanggal}</div>` : ""}
+          ${jam ? `<div>🕓 ${jam} WIB</div>` : ""}
+          ${lokasi ? `<div>📍 ${lokasi}</div>` : ""}
+        </div>
+        <div class="date">${formatWIB(d.createdAt)}</div>
+        <p>${(d.content || "").substring(0, 140)}...</p>
+        <a href="${href}" class="btn">Baca Selengkapnya</a>
+      </div>`;
+    }
+
+    // === Struktur Organisasi ===
+    if (d.category === "Struktur Organisasi") {
+        const image =
+            d.imageUrl
+                ? `<img src="${d.imageUrl}" class="thumb">`
+                : (d.images && d.images.length > 0
+                    ? `<img src="${d.images[0]}" class="thumb">`
+                    : "");
+
+        return `
+    <div class="card struktur-card">
+      ${image}
+      <h3>${d.title}</h3>
+      <div class="date">${formatWIB(d.createdAt)}</div>
+      <a href="${href}" class="btn">Lihat Detail</a>
+    </div>`;
+    }
+
+    // === Default (Berita, Pengumuman, Struktur Organisasi, dll) ===
+    return `
+    <div class="card">
+      ${thumb}
+      <h3>${d.title}</h3>
+      <div class="date">
+        ${formatWIB(d.createdAt)}
+        ${d.updatedAt ? `<div style="font-size:.6rem;opacity:.7;">di-edit pada ${formatWIB(d.updatedAt)}</div>` : ""}
+      </div>
+      <p>${(d.content || "").substring(0, 120)}...</p>
+      <a href="${href}" class="btn">Baca Selengkapnya</a>
+    </div>`;
 }
+
 function resetPagination() { lastVisible = null; reachedEnd = false; contentList.innerHTML = ""; loadMoreBtn.style.display = "inline-block"; }
 async function loadCategory(cat, append = false) {
     if (isLoading || reachedEnd) return; isLoading = true; noResultsEl.style.display = "none"; currentCategory = cat;
@@ -131,6 +206,36 @@ document.addEventListener("click", e => {
 document.addEventListener("keydown", e => {
     if (e.key === "Escape" && searchWrap.classList.contains("open")) { searchWrap.classList.remove("open"); searchInput.value = ""; resetPagination(); loadCategory(currentCategory); }
 });
+
+/* ==== Hamburger Menu Toggle ==== */
+const hamburger = document.getElementById("hamburger");
+const nav = document.getElementById("mainNav");
+
+if (hamburger && nav) {
+    hamburger.addEventListener("click", () => {
+        nav.classList.toggle("open");
+        hamburger.classList.toggle("active");
+        document.body.classList.toggle("nav-open");
+    });
+
+
+
+    // Tutup menu saat user pilih kategori
+    nav.querySelectorAll("a[data-tab]").forEach(a => {
+        a.addEventListener("click", () => {
+            nav.classList.remove("open");
+            hamburger.classList.remove("active");
+        });
+    });
+
+    // Tutup menu jika klik di luar area
+    document.addEventListener("click", (e) => {
+        if (!nav.contains(e.target) && !hamburger.contains(e.target)) {
+            nav.classList.remove("open");
+            hamburger.classList.remove("active");
+        }
+    });
+}
 
 /* CACHING + SEARCH */
 let allPostsCache = [];
@@ -192,19 +297,22 @@ function setActiveTab(cat) {
     });
 }
 
-/* ===== SIMPAN STATE SAAT KLIK "BACA SELENGKAPNYA" ===== */
+/* ===== SIMPAN STATE SAAT KLIK "BACA SELENGKAPNYA" (dengan debounce ringan) ===== */
 document.addEventListener("click", (e) => {
     const link = e.target.closest("a.btn");
     if (link && link.textContent.includes("Baca Selengkapnya")) {
-        const loadedCount = document.querySelectorAll("#contentList .card").length;
-        const state = {
-            scroll: window.scrollY,
-            category: currentCategory,
-            loadedCount // ← simpan jumlah kartu yang sudah tampil (lebih akurat dari pageCount)
-        };
-        sessionStorage.setItem("pageState", JSON.stringify(state));
-        sessionStorage.setItem("lastCategory", currentCategory);
-        sessionStorage.setItem("fromDetail", "yes");
+        // Sedikit tunda agar posisi scroll sudah final saat disimpan
+        setTimeout(() => {
+            const loadedCount = document.querySelectorAll("#contentList .card").length;
+            const state = {
+                scroll: window.scrollY,
+                category: currentCategory,
+                loadedCount // simpan jumlah kartu yang sudah tampil
+            };
+            sessionStorage.setItem("pageState", JSON.stringify(state));
+            sessionStorage.setItem("lastCategory", currentCategory);
+            sessionStorage.setItem("fromDetail", "yes");
+        }, 150); // 150ms cukup, tidak terasa bagi user
     }
 });
 
@@ -287,4 +395,13 @@ window.addEventListener("load", async () => {
     sessionStorage.removeItem("pageState");
 });
 
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+        const saved = sessionStorage.getItem("pageState");
+        if (saved) {
+            const { scroll } = JSON.parse(saved);
+            setTimeout(() => window.scrollTo({ top: scroll, behavior: "auto" }), 100);
+        }
+    }
+});
 

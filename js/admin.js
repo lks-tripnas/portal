@@ -98,7 +98,9 @@ searchAdmin.addEventListener("keyup", applyAdminSearchFilter);
 document.getElementById("fKategori").addEventListener("change", () => {
     const cat = document.getElementById("fKategori").value;
     uploadContainer.innerHTML = "";
+
     if (cat === "Peraturan") {
+        // === PERATURAN: pakai link dokumen ===
         uploadContainer.innerHTML = `
       <label>Tambahkan Link Dokumen</label>
       <div id="linkList"></div>
@@ -106,7 +108,33 @@ document.getElementById("fKategori").addEventListener("change", () => {
       <div class="muted">Masukkan nama dan link dokumen (bisa lebih dari satu).</div>
       <div class="muted" style="margin-top:.4rem;">⚠️ File harus dapat diakses publik (Google Drive “Anyone with the link”).</div>`;
         document.getElementById("addLinkBtn").addEventListener("click", () => addLinkRow());
+
+    } else if (cat === "Struktur Organisasi") {
+        // === STRUKTUR ORGANISASI: upload satu gambar saja ===
+        uploadContainer.innerHTML = `
+      <label>Upload Struktur Organisasi</label>
+      <input type="file" id="fFile" accept="image/*">
+      <div class="muted">Unggah 1 gambar struktur organisasi (format PNG/JPG).</div>
+      <div id="oldImages"></div>`;
+        renderOldImages();
+
+    } else if (cat === "Agenda") {
+        // === AGENDA: tanggal, jam, lokasi, deskripsi ===
+        uploadContainer.innerHTML = `
+      <label>Tanggal Agenda</label>
+      <input type="date" id="fTanggalAgenda">
+
+      <label>Jam (WIB)</label>
+      <input type="time" id="fJamAgenda" step="60">
+
+      <label>Lokasi / Keterangan</label>
+      <input type="text" id="fLokasiAgenda" placeholder="Misal: Aula Kantor / Rapat Tahunan">
+
+      <div class="muted">Isi deskripsi lengkap di area teks utama di bawah.</div>
+      <div class="muted" style="margin-top:.3rem;">Zona waktu otomatis diset ke WIB (UTC+7).</div>`;
+
     } else {
+        // === DEFAULT: Berita, Pengumuman, dll. ===
         uploadContainer.innerHTML = `
       <label>Upload Gambar</label>
       <input type="file" id="fFile" accept="image/*" multiple>
@@ -115,6 +143,7 @@ document.getElementById("fKategori").addEventListener("change", () => {
         renderOldImages();
     }
 });
+
 
 function addLinkRow(name = "", url = "") {
     const list = document.getElementById("linkList");
@@ -233,15 +262,33 @@ window.editRow = async (id) => {
 
     document.getElementById("fKategori").dispatchEvent(new Event("change"));
 
+    if (d.category === "Agenda") {
+        setTimeout(() => {
+            if (d.tanggal) document.getElementById("fTanggalAgenda").value = d.tanggal;
+            if (d.jam) document.getElementById("fJamAgenda").value = d.jam;
+            if (d.lokasi) document.getElementById("fLokasiAgenda").value = d.lokasi;
+        }, 150);
+    }
+
     if (d.category === "Peraturan" && Array.isArray(d.links)) {
         d.links.forEach(l => addLinkRow(l.name || "", l.url || ""));
         currentImages = [];
         removedImages.clear();
+
     } else {
-        currentImages = Array.isArray(d.images) ? d.images.slice() : [];
+        // === Periksa apakah data pakai images[] atau imageUrl tunggal ===
+        if (Array.isArray(d.images) && d.images.length > 0) {
+            currentImages = d.images.slice();
+        } else if (d.imageUrl) {
+            currentImages = [d.imageUrl];
+        } else {
+            currentImages = [];
+        }
+
         removedImages = new Set();
         renderOldImages();
     }
+
     window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
@@ -309,10 +356,7 @@ async function submitForm() {
 
     if (slug) {
         const used = await isSlugUsed(slug, EDIT_ID);
-        if (used) {
-            showModal("Slug '" + slug + "' sudah dipakai.");
-            return;
-        }
+        if (used) return showModal("Slug '" + slug + "' sudah dipakai.");
     }
 
     let payload = { title, category, content, status, slug, author: auth.currentUser.email };
@@ -326,12 +370,36 @@ async function submitForm() {
             if (url) links.push({ name, url });
         });
         payload.links = links;
-    } else {
+    }
+    else if (category === "Struktur Organisasi") {
+        const fileInput = document.getElementById("fFile");
+        if (fileInput?.files?.length > 0) {
+            showLoading(true);
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("upload_preset", "lks_tripnas_unsigned");
+            formData.append("folder", "struktur-organisasi");
+            const res = await fetch("https://api.cloudinary.com/v1_1/dxkqflxae/image/upload", { method: "POST", body: formData });
+            const data = await res.json();
+            showLoading(false);
+            if (data.secure_url) payload.imageUrl = data.secure_url;
+        }
+    }
+    else if (category === "Agenda") {
+        const tanggal = document.getElementById("fTanggalAgenda")?.value || "";
+        const jam = document.getElementById("fJamAgenda")?.value || "";
+        const lokasi = document.getElementById("fLokasiAgenda")?.value || "";
+        payload.tanggal = tanggal;
+        payload.jam = jam;
+        payload.lokasi = lokasi;
+    }
+    else {
+        // Berita / Pengumuman (default)
         const fileInput = document.getElementById("fFile");
         const files = fileInput ? fileInput.files : [];
         const keptOld = currentImages.filter(u => !removedImages.has(u));
         const imageUrls = [...keptOld];
-
         if (files.length > 0) {
             showLoading(true);
             for (const file of files) {
@@ -363,3 +431,4 @@ async function submitForm() {
         showModal("Gagal menyimpan: " + err.message);
     }
 }
+
