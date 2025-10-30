@@ -115,7 +115,7 @@ async function loadDetail() {
                 else if (lower.includes(".xls")) icon = "📊";
                 else if (lower.includes(".ppt")) icon = "📈";
                 else if (lower.includes(".zip")) icon = "📦";
-                else if (lower.includes("drive.google.com")) icon = "🗎";
+                else if (lower.includes("drive.google.com")) icon = "📄";
                 return `<div class="doc-item"><span>${icon}</span><a href="${url}" target="_blank">${name}</a></div>`;
             }).join("");
             docSection = `<div class="doc-title">Dokumen terkait:</div>${items}`;
@@ -220,3 +220,4 @@ if (backBtn) {
         window.location.href = "index.html";
     });
 }
+
