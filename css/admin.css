@@ -385,4 +385,19 @@
 
     .modal-box button {
         margin-top: 1rem;
+
+    }
+
+    .tox-editor-container {
+        margin-top: 10px !important;
+    }
+
+    .tox-editor-header {
+        z-index: 500 !important;
+        /* pastikan di atas elemen lain tapi di bawah header */
+    }
+
+    header {
+        position: relative;
+        z-index: 1000;
     }
