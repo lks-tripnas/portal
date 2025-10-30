@@ -413,3 +413,13 @@ window.addEventListener('pageshow', (event) => {
     }
 });
 
+/* ==== SERVICE WORKER REGISTER ==== */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(() => console.log('✅ Service Worker terdaftar'))
+      .catch(err => console.error('❌ Gagal daftar SW:', err));
+  });
+}
+
+
