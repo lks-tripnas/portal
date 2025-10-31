@@ -17,7 +17,7 @@
 
 <body>
   <header>
-    <h1>Admin News</h1>
+    <h1>Portal Admin - LKS Tripnas</h1>
   </header>
 
   <main>
@@ -84,6 +84,23 @@
         <button class="btn secondary" id="logoutBtn">Logout</button>
       </div>
       <div id="formMsg" class="muted mt"></div>
+
+<div class="mt" id="themeSection">
+  <h4>Tema Warna</h4>
+  <div id="colorThemes">
+    <button class="color-btn" data-theme="kuning" style="background:linear-gradient(135deg,#ffd84d,#f7b500);"></button>
+    <button class="color-btn" data-theme="biru" style="background:linear-gradient(135deg,#5cc6ff,#007bff);"></button>
+    <button class="color-btn" data-theme="merah" style="background:linear-gradient(135deg,#ff7b7b,#e60023);"></button>
+    <button class="color-btn" data-theme="hijau" style="background:linear-gradient(135deg,#a8ff78,#78ffd6);"></button>
+    <button class="color-btn" data-theme="ungu" style="background:linear-gradient(135deg,#c084fc,#9333ea);"></button>
+    <button class="color-btn" data-theme="abu" style="background:linear-gradient(135deg,#d9d9d9,#888888);"></button>
+    <button class="color-btn" data-theme="jingga" style="background:linear-gradient(135deg,#ffb347,#ff7b00);"></button>
+    <button class="color-btn" data-theme="toska" style="background:linear-gradient(135deg,#4de1c1,#009688);"></button>
+    <button class="color-btn" data-theme="pink" style="background:linear-gradient(135deg,#ff9ac9,#ff4081);"></button>
+    <button class="color-btn" data-theme="hijaugelap" style="background:linear-gradient(135deg,#6dbf73,#0e7a30);"></button>
+  </div>
+</div>
+
     </div>
 
     <!-- LIST KONTEN -->
@@ -98,6 +115,8 @@
             <option>Berita</option>
             <option>Pengumuman</option>
             <option>Peraturan</option>
+            <option>Agenda</option>
+            <option>Struktur Organisasi</option>
           </select>
           <select id="sortSelect">
             <option value="terbaru">Urutkan: Terbaru</option>

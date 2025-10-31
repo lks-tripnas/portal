@@ -11,6 +11,28 @@ const app = initializeApp({
 });
 const db = getFirestore(app);
 
+// === GLOBAL THEME SYNC ===
+const globalTheme = localStorage.getItem("globalTheme");
+const themes = {
+    kuning: ["#f7b500", "#ffd84d"],
+    biru: ["#007bff", "#5cc6ff"],
+    merah: ["#e60023", "#ff7b7b"],
+    hijau: ["#78ffd6", "#a8ff78"],
+    ungu: ["#9333ea", "#c084fc"],
+    abu: ["#888888", "#d9d9d9"],
+    jingga: ["#ff7b00", "#ffb347"],
+    toska: ["#009688", "#4de1c1"],
+    pink: ["#ff4081", "#ff9ac9"],
+    hijaugelap: ["#0e7a30", "#6dbf73"]
+};
+
+if (globalTheme && themes[globalTheme]) {
+    const [accent, accent2] = themes[globalTheme];
+    document.documentElement.style.setProperty("--accent", accent);
+    document.documentElement.style.setProperty("--accent2", accent2);
+    document.documentElement.style.setProperty("--accent-gradient", `linear-gradient(135deg, ${accent2}, ${accent})`);
+}
+
 /* THEME */
 const themeToggle = document.getElementById("themeToggle");
 if (themeToggle) {
@@ -64,12 +86,12 @@ const PAGE_SIZE = 10;
 
 // === Simpan posisi scroll secara realtime ===
 window.addEventListener("scroll", () => {
-  const state = {
-    scroll: window.scrollY,
-    category: currentCategory,
-    loadedCount: document.querySelectorAll("#contentList .card").length
-  };
-  sessionStorage.setItem("pageState", JSON.stringify(state));
+    const state = {
+        scroll: window.scrollY,
+        category: currentCategory,
+        loadedCount: document.querySelectorAll("#contentList .card").length
+    };
+    sessionStorage.setItem("pageState", JSON.stringify(state));
 });
 
 /* LOAD MORE BUTTON */
@@ -415,11 +437,11 @@ window.addEventListener('pageshow', (event) => {
 
 /* ==== SERVICE WORKER REGISTER ==== */
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(() => console.log('✅ Service Worker terdaftar'))
-      .catch(err => console.error('❌ Gagal daftar SW:', err));
-  });
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(() => console.log('✅ Service Worker terdaftar'))
+            .catch(err => console.error('❌ Gagal daftar SW:', err));
+    });
 }
 
 

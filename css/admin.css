@@ -401,3 +401,37 @@
         position: relative;
         z-index: 1000;
     }
+
+#themeSection {
+  text-align: center;
+  margin-top: 3rem;
+}
+
+#themeSection h4 {
+  margin-bottom: 0.3rem; /* jarak tulisan ke tombol lebih rapat */
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+#colorThemes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .45rem; /* rapat tapi tetap rapi */
+  margin-top: 0;
+}
+
+.color-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 4px rgba(0,0,0,.2);
+  cursor: pointer;
+  transition: transform .2s, box-shadow .2s;
+}
+
+.color-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 6px rgba(0,0,0,.3);
+}

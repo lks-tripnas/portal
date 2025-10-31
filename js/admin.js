@@ -40,9 +40,15 @@ const fSlugEl = document.getElementById("fSlug");
 
 if (fJudulEl && fSlugEl) {
     fJudulEl.addEventListener("input", () => {
-        if (!fSlugEl.value.trim()) {
+        // hanya update otomatis jika user belum menyentuh field slug secara manual
+        if (!fSlugEl.dataset.manual) {
             fSlugEl.value = slugify(fJudulEl.value);
         }
+    });
+
+    fSlugEl.addEventListener("input", () => {
+        // tandai bahwa user mengetik sendiri slug-nya
+        fSlugEl.dataset.manual = "true";
     });
 }
 
@@ -192,7 +198,9 @@ function renderTable(data) {
       <td data-label="Status"><span class="tag">${d.status || ""}</span></td>
       <td data-label="Media">${d.category === "Peraturan"
                 ? (d.links?.length || 0) + " dokumen"
-                : (d.images && d.images.length > 0 ? `<a href="${d.images[0]}" target="_blank">Lihat</a>` : "-")
+                : d.category === "Struktur Organisasi"
+                    ? (d.imageUrl ? `<a href="${d.imageUrl}" target="_blank">Lihat</a>` : "-")
+                    : (d.images && d.images.length > 0 ? `<a href="${d.images[0]}" target="_blank">Lihat</a>` : "-")
             }</td>`;
         tbody.appendChild(tr);
     });
@@ -432,3 +440,38 @@ async function submitForm() {
     }
 }
 
+// === SISTEM TEMA WARNA GLOBAL ===
+const colorThemes = {
+    kuning: ["#f7b500", "#ffd84d"],
+    biru: ["#007bff", "#5cc6ff"],
+    merah: ["#e60023", "#ff7b7b"],
+    hijau: ["#78ffd6", "#a8ff78"],
+    ungu: ["#9333ea", "#c084fc"],
+    abu: ["#888888", "#d9d9d9"],
+    jingga: ["#ff7b00", "#ffb347"],
+    toska: ["#009688", "#4de1c1"],
+    pink: ["#ff4081", "#ff9ac9"],
+    hijaugelap: ["#0e7a30", "#6dbf73"]
+};
+
+function applyTheme(themeName) {
+    const [accent, accent2] = colorThemes[themeName];
+    document.documentElement.style.setProperty("--accent", accent);
+    document.documentElement.style.setProperty("--accent2", accent2);
+    document.documentElement.style.setProperty("--accent-gradient", `linear-gradient(135deg, ${accent2}, ${accent})`);
+    localStorage.setItem("globalTheme", themeName);
+}
+
+// Apply tema saat admin dibuka
+const savedTheme = localStorage.getItem("globalTheme");
+if (savedTheme && colorThemes[savedTheme]) {
+    applyTheme(savedTheme);
+}
+
+// Klik tombol tema
+document.querySelectorAll(".color-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const theme = btn.dataset.theme;
+        applyTheme(theme);
+    });
+});

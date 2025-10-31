@@ -13,6 +13,28 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// === GLOBAL THEME SYNC ===
+const globalTheme = localStorage.getItem("globalTheme");
+const themes = {
+    kuning: ["#f7b500", "#ffd84d"],
+    biru: ["#007bff", "#5cc6ff"],
+    merah: ["#e60023", "#ff7b7b"],
+    hijau: ["#78ffd6", "#a8ff78"],
+    ungu: ["#9333ea", "#c084fc"],
+    abu: ["#888888", "#d9d9d9"],
+    jingga: ["#ff7b00", "#ffb347"],
+    toska: ["#009688", "#4de1c1"],
+    pink: ["#ff4081", "#ff9ac9"],
+    hijaugelap: ["#0e7a30", "#6dbf73"]
+};
+
+if (globalTheme && themes[globalTheme]) {
+    const [accent, accent2] = themes[globalTheme];
+    document.documentElement.style.setProperty("--accent", accent);
+    document.documentElement.style.setProperty("--accent2", accent2);
+    document.documentElement.style.setProperty("--accent-gradient", `linear-gradient(135deg, ${accent2}, ${accent})`);
+}
+
 /* === THEME === */
 const themeToggle = document.getElementById("themeToggle");
 if (themeToggle) {
@@ -210,13 +232,13 @@ if (homeTitle) {
 /* === Tombol "Kembali" manual agar state index dipulihkan === */
 const backBtn = document.querySelector("a.btn[href='javascript:history.back()']");
 if (backBtn) {
-  backBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    // Tandai bahwa user kembali dari detail
-    sessionStorage.setItem("fromDetail", "yes");
-    // Gunakan navigasi history agar state sessionStorage tetap hidup
-    history.back();
-  });
+    backBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        // Tandai bahwa user kembali dari detail
+        sessionStorage.setItem("fromDetail", "yes");
+        // Gunakan navigasi history agar state sessionStorage tetap hidup
+        history.back();
+    });
 }
 
 
