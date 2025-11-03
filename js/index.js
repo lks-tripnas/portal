@@ -1,18 +1,6 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-import { getFirestore, collection, getDocs, query, orderBy, where, limit, startAfter } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+const backendBase = "https://backend-lks-tripnas.netlify.app/.netlify/functions";
 
-const app = initializeApp({
-    apiKey: "AIzaSyB-7udHLwaIF-PaGfb_yjgf7zkz6wrLKFU",
-    authDomain: "portal-tripnas.firebaseapp.com",
-    projectId: "portal-tripnas",
-    storageBucket: "portal-tripnas.firebasestorage.app",
-    messagingSenderId: "664623452933",
-    appId: "1:664623452933:web:1f6018c0eff3c1a7c09d6c"
-});
-const db = getFirestore(app);
-
-// === GLOBAL THEME SYNC ===
-const globalTheme = localStorage.getItem("globalTheme");
+// === GLOBAL THEME DARI SERVER ===
 const themes = {
     kuning: ["#f7b500", "#ffd84d"],
     biru: ["#007bff", "#5cc6ff"],
@@ -26,12 +14,21 @@ const themes = {
     hijaugelap: ["#0e7a30", "#6dbf73"]
 };
 
-if (globalTheme && themes[globalTheme]) {
-    const [accent, accent2] = themes[globalTheme];
-    document.documentElement.style.setProperty("--accent", accent);
-    document.documentElement.style.setProperty("--accent2", accent2);
-    document.documentElement.style.setProperty("--accent-gradient", `linear-gradient(135deg, ${accent2}, ${accent})`);
-}
+(async () => {
+    try {
+        const res = await fetch("https://backend-lks-tripnas.netlify.app/.netlify/functions/get-config");
+        const cfg = await res.json();
+        const themeName = cfg.theme || "kuning";
+        if (themes[themeName]) {
+            const [accent, accent2] = themes[themeName];
+            document.documentElement.style.setProperty("--accent", accent);
+            document.documentElement.style.setProperty("--accent2", accent2);
+            document.documentElement.style.setProperty("--accent-gradient", `linear-gradient(135deg, ${accent2}, ${accent})`);
+        }
+    } catch (err) {
+        console.warn("Gagal memuat tema global:", err);
+    }
+})();
 
 /* THEME */
 const themeToggle = document.getElementById("themeToggle");
@@ -39,9 +36,23 @@ if (themeToggle) {
     themeToggle.addEventListener("click", () => {
         document.body.classList.toggle("dark");
         localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light");
-        themeToggle.textContent = document.body.classList.contains("dark") ? "🌙" : "☀️";
+
+        // ⬇️ 1. Ikon di sini dibalik
+        themeToggle.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
     });
-    if (localStorage.getItem("theme") === "dark") { document.body.classList.add("dark"); themeToggle.textContent = "🌙"; }
+
+    // LOGIKA BARU: Default ke Gelap
+    if (localStorage.getItem("theme") === "light") {
+        // Jika HANYA 'light' yang tersimpan, biarkan terang
+        document.body.classList.remove("dark");
+        // ⬇️ 2. Ikon di sini dibalik
+        themeToggle.textContent = "🌙";
+    } else {
+        // Jika 'dark' atau null (kunjungan pertama), set ke gelap
+        document.body.classList.add("dark");
+        // ⬇️ 3. Ikon di sini juga dibalik
+        themeToggle.textContent = "☀️";
+    }
 }
 
 /* ELEMENTS */
@@ -52,47 +63,9 @@ const searchInput = document.getElementById("searchInput");
 const searchToggle = document.getElementById("searchToggle");
 const cacheStatus = document.getElementById("cacheStatus");
 
-// ==== PERIKSA JIKA ADA FLAG "FORCE_HOME" ====
-if (sessionStorage.getItem("forceHome") === "true") {
-    console.log("🏠 Force kembali ke halaman awal (kategori Berita)");
-
-    // Hapus semua state agar benar-benar segar
-    sessionStorage.clear();
-
-    // Set kategori default ke Berita
-    sessionStorage.setItem("lastCategory", "Berita");
-
-    // Tutup pencarian & kosongkan input
-    const sWrap = document.getElementById("searchBarWrap");
-    const sInput = document.getElementById("searchInput");
-    if (sWrap) sWrap.classList.remove("open");
-    if (sInput) sInput.value = "";
-
-    // Jalankan load kategori awal secara langsung
-    window.addEventListener("load", async () => {
-        currentCategory = "Berita";
-        setActiveTab("Berita");
-        resetPagination();
-        await loadCategory("Berita");
-        window.scrollTo({ top: 0, behavior: "auto" });
-    });
-
-    // Bersihkan flag agar tidak berulang
-    sessionStorage.removeItem("forceHome");
-}
-
 let currentCategory = "Berita", lastVisible = null, isLoading = false, reachedEnd = false;
 const PAGE_SIZE = 10;
-
-// === Simpan posisi scroll secara realtime ===
-window.addEventListener("scroll", () => {
-    const state = {
-        scroll: window.scrollY,
-        category: currentCategory,
-        loadedCount: document.querySelectorAll("#contentList .card").length
-    };
-    sessionStorage.setItem("pageState", JSON.stringify(state));
-});
+let allPostsCache = [];
 
 /* LOAD MORE BUTTON */
 const loadMoreContainer = document.createElement("div");
@@ -101,14 +74,36 @@ loadMoreContainer.style.margin = "1.8rem 0";
 loadMoreContainer.innerHTML = `<a id="loadMoreBtn" class="btn">Tampilkan Lebih Banyak</a>`;
 contentList.insertAdjacentElement("afterend", loadMoreContainer);
 const loadMoreBtn = document.getElementById("loadMoreBtn");
-loadMoreBtn.addEventListener("click", () => { if (!isLoading && !reachedEnd) { if (currentCategory) loadCategory(currentCategory, true); else loadAllPosts(true); } });
+loadMoreBtn.addEventListener("click", () => {
+    if (!isLoading && !reachedEnd) {
+        loadCategory(currentCategory, true);
+    }
+});
 
 function formatWIB(ts) {
     try {
-        if (!ts) return ""; const d = (typeof ts.toDate === "function") ? ts.toDate() : new Date(ts);
-        return `${d.toLocaleDateString("id-ID")} ${d.toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit', hour12: false }).replace(":", ".")} WIB`;
-    } catch { return ""; }
+        if (!ts) return "";
+        let d;
+        if (typeof ts.toDate === "function") {
+            d = ts.toDate();
+        } else if (typeof ts === "object" && ts._seconds) {
+            d = new Date(ts._seconds * 1000);
+        } else if (typeof ts === "string") {
+            d = new Date(ts);
+        } else if (typeof ts === "number") {
+            d = new Date(ts);
+        } else {
+            return "";
+        }
+        if (isNaN(d)) return "";
+        const tanggal = d.toLocaleDateString("id-ID");
+        const jam = d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", hour12: false }).replace(":", ".");
+        return `${tanggal} ${jam} WIB`;
+    } catch {
+        return "";
+    }
 }
+
 function renderCard(id, d) {
     const href = (d.slug && d.slug.trim())
         ? `detail.html?slug=${encodeURIComponent(d.slug)}`
@@ -116,12 +111,11 @@ function renderCard(id, d) {
 
     const thumb =
         d.images && d.images.length > 0
-            ? `<img src="${d.images[0]}" class="thumb">`
+            ? `<img src="${d.images[0]}" class="thumb" loading="lazy">` // ⬅️ Tambah di sini
             : d.imageUrl
-                ? `<img src="${d.imageUrl}" class="thumb">`
+                ? `<img src="${d.imageUrl}" class="thumb" loading="lazy">` // ⬅️ Tambah di sini
                 : "";
 
-    // === Peraturan: tampilkan jumlah dokumen ===
     if (d.category === "Peraturan") {
         const totalDocs = Array.isArray(d.links) ? d.links.length : 0;
         return `
@@ -133,11 +127,10 @@ function renderCard(id, d) {
         </div>
         <p>${(d.content || "").substring(0, 150)}...</p>
         ${totalDocs > 0 ? `<div class="doc-info">📄 ${totalDocs} dokumen</div>` : ""}
-        <a href="${href}" class="btn">Baca Selengkapnya</a>
+        <a href="${href}" class="btn btn-detail">Baca Selengkapnya</a>
       </div>`;
     }
 
-    // === Agenda: tampilkan tanggal, jam, lokasi ===
     if (d.category === "Agenda") {
         const tanggal = d.tanggal
             ? new Date(d.tanggal).toLocaleDateString("id-ID", {
@@ -155,22 +148,21 @@ function renderCard(id, d) {
         <h3>${d.title}</h3>
         <div class="agenda-meta">
           ${tanggal ? `<div>🗓️ ${tanggal}</div>` : ""}
-          ${jam ? `<div>🕓 ${jam} WIB</div>` : ""}
+          ${jam ? `<div>🕐 ${jam} WIB</div>` : ""}
           ${lokasi ? `<div>📍 ${lokasi}</div>` : ""}
         </div>
         <div class="date">${formatWIB(d.createdAt)}</div>
         <p>${(d.content || "").substring(0, 140)}...</p>
-        <a href="${href}" class="btn">Baca Selengkapnya</a>
+        <a href="${href}" class="btn btn-detail">Baca Selengkapnya</a>
       </div>`;
     }
 
-    // === Struktur Organisasi ===
     if (d.category === "Struktur Organisasi") {
         const image =
             d.imageUrl
-                ? `<img src="${d.imageUrl}" class="thumb">`
+                ? `<img src="${d.imageUrl}" class="thumb" loading="lazy">` // ⬅️ Tambah di sini
                 : (d.images && d.images.length > 0
-                    ? `<img src="${d.images[0]}" class="thumb">`
+                    ? `<img src="${d.images[0]}" class="thumb" loading="lazy">` // ⬅️ Tambah di sini
                     : "");
 
         return `
@@ -178,11 +170,10 @@ function renderCard(id, d) {
       ${image}
       <h3>${d.title}</h3>
       <div class="date">${formatWIB(d.createdAt)}</div>
-      <a href="${href}" class="btn">Lihat Detail</a>
+      <a href="${href}" class="btn btn-detail">Lihat Detail</a>
     </div>`;
     }
 
-    // === Default (Berita, Pengumuman, Struktur Organisasi, dll) ===
     return `
     <div class="card">
       ${thumb}
@@ -192,35 +183,88 @@ function renderCard(id, d) {
         ${d.updatedAt ? `<div style="font-size:.6rem;opacity:.7;">di-edit pada ${formatWIB(d.updatedAt)}</div>` : ""}
       </div>
       <p>${(d.content || "").substring(0, 120)}...</p>
-      <a href="${href}" class="btn">Baca Selengkapnya</a>
+      <a href="${href}" class="btn btn-detail">Baca Selengkapnya</a>
     </div>`;
 }
 
-function resetPagination() { lastVisible = null; reachedEnd = false; contentList.innerHTML = ""; loadMoreBtn.style.display = "inline-block"; }
+function resetPagination() {
+    lastVisible = null;
+    reachedEnd = false;
+    contentList.innerHTML = "";
+    loadMoreBtn.style.display = "inline-block";
+}
+
 async function loadCategory(cat, append = false) {
-    if (isLoading || reachedEnd) return; isLoading = true; noResultsEl.style.display = "none"; currentCategory = cat;
-    if (!append) { contentList.innerHTML = ""; lastVisible = null; reachedEnd = false; }
+    if (isLoading) return;
+    isLoading = true;
+    noResultsEl.style.display = "none";
+    currentCategory = cat;
+
+    let offset = 0;
+    if (append) {
+        // Hitung offset berdasarkan item yang sudah ada
+        offset = document.querySelectorAll("#contentList .card").length;
+    }
+
+    if (!append) {
+        contentList.innerHTML = "";
+        reachedEnd = false;
+    }
+
     try {
-        let q = query(collection(db, "posts"), where("category", "==", cat), where("status", "==", "Aktif"), orderBy("createdAt", "desc"), limit(PAGE_SIZE));
-        if (lastVisible) q = query(q, startAfter(lastVisible));
-        const snap = await getDocs(q);
-        if (snap.empty && !append) { noResultsEl.style.display = "block"; loadMoreBtn.style.display = "none"; }
-        else {
-            snap.forEach(d => contentList.insertAdjacentHTML("beforeend", renderCard(d.id, d.data())));
-            lastVisible = snap.docs[snap.docs.length - 1];
-            if (snap.size < PAGE_SIZE) { reachedEnd = true; loadMoreBtn.style.display = "none"; } else loadMoreBtn.style.display = "inline-block";
+        // Buat URL baru dengan offset
+        const url = `${backendBase}/get-posts?category=${encodeURIComponent(cat)}&offset=${offset}`;
+        console.log("Memuat data (fetch) dari:", url);
+
+        const res = await fetch(url);
+        const posts = await res.json();
+
+        if (!posts || posts.length === 0) {
+            if (append) {
+                reachedEnd = true; // Habis
+                loadMoreBtn.style.display = "none";
+            } else {
+                noResultsEl.style.display = "block"; // Kosong
+                loadMoreBtn.style.display = "none";
+            }
+            return;
         }
-    } catch (e) { console.error(e); } isLoading = false;
+
+        posts.forEach(p => contentList.insertAdjacentHTML("beforeend", renderCard(p.id, p)));
+
+        // Cek jika ini halaman terakhir
+        if (posts.length < PAGE_SIZE) { // PAGE_SIZE = 10
+            reachedEnd = true;
+            loadMoreBtn.style.display = "none";
+        } else {
+            loadMoreBtn.style.display = "inline-block";
+        }
+
+    } catch (err) {
+        console.error("Gagal memuat kategori:", err);
+        contentList.innerHTML = "<p style='text-align:center'>Gagal memuat konten.</p>";
+    } finally {
+        isLoading = false;
+    }
 }
 
 /* NAVIGATION */
 document.querySelectorAll("nav a").forEach(a => {
     a.addEventListener("click", e => {
         e.preventDefault();
+
+        // Hapus state lama karena user ganti kategori manual
+        sessionStorage.removeItem("pageState");
+        sessionStorage.removeItem("fromDetail");
+
         document.querySelectorAll("nav a").forEach(n => n.classList.remove("active"));
         a.classList.add("active");
+
+        currentCategory = a.dataset.tab;
+        sessionStorage.setItem("lastCategory", currentCategory);
+
         resetPagination();
-        loadCategory(a.dataset.tab);
+        loadCategory(currentCategory);
     });
 });
 
@@ -231,12 +275,24 @@ searchToggle.addEventListener("click", () => {
     if (open) setTimeout(() => searchInput.focus(), 180);
     else { searchInput.value = ""; resetPagination(); loadCategory(currentCategory); }
 });
+
 document.addEventListener("click", e => {
     const inside = searchWrap.contains(e.target) || searchToggle.contains(e.target);
-    if (!inside && searchWrap.classList.contains("open")) { searchWrap.classList.remove("open"); searchInput.value = ""; resetPagination(); loadCategory(currentCategory); }
+    if (!inside && searchWrap.classList.contains("open")) {
+        searchWrap.classList.remove("open");
+        searchInput.value = "";
+        resetPagination();
+        loadCategory(currentCategory);
+    }
 });
+
 document.addEventListener("keydown", e => {
-    if (e.key === "Escape" && searchWrap.classList.contains("open")) { searchWrap.classList.remove("open"); searchInput.value = ""; resetPagination(); loadCategory(currentCategory); }
+    if (e.key === "Escape" && searchWrap.classList.contains("open")) {
+        searchWrap.classList.remove("open");
+        searchInput.value = "";
+        resetPagination();
+        loadCategory(currentCategory);
+    }
 });
 
 /* ==== Hamburger Menu Toggle ==== */
@@ -250,7 +306,6 @@ if (hamburger && nav) {
         document.body.classList.toggle("nav-open");
     });
 
-    // Tutup menu saat user pilih kategori
     nav.querySelectorAll("a[data-tab]").forEach(a => {
         a.addEventListener("click", () => {
             nav.classList.remove("open");
@@ -258,7 +313,6 @@ if (hamburger && nav) {
         });
     });
 
-    // Tutup menu jika klik di luar area
     document.addEventListener("click", (e) => {
         if (!nav.contains(e.target) && !hamburger.contains(e.target)) {
             nav.classList.remove("open");
@@ -268,172 +322,175 @@ if (hamburger && nav) {
 }
 
 /* CACHING + SEARCH */
-let allPostsCache = [];
 async function cacheAllPosts() {
     try {
-        const snap = await getDocs(query(collection(db, "posts"), where("status", "==", "Aktif"), orderBy("createdAt", "desc")));
-        allPostsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        // Kita hanya fetch SEMUA post, sekali saja.
+        const res = await fetch(`${backendBase}/get-posts`);
+        allPostsCache = await res.json();
+
+        if (!allPostsCache || allPostsCache.length === 0) {
+            throw new Error("Cache yang diterima kosong.");
+        }
+
+        console.log(`✅ Cache siap: ${allPostsCache.length} item.`);
         cacheStatus.textContent = `${allPostsCache.length} berita siap dicari 🔎`;
         setTimeout(() => cacheStatus.style.display = "none", 3000);
-    } catch (err) { cacheStatus.textContent = "Gagal memuat data"; console.error(err); }
+    } catch (err) {
+        console.error("❌ Gagal total memuat cache:", err);
+        cacheStatus.textContent = "Gagal memuat data";
+        // Jika ini gagal, seluruh aplikasi tidak bisa jalan
+        contentList.innerHTML = "<p style='text-align:center'>Gagal memuat data. Coba muat ulang halaman.</p>";
+        A
+    }
 }
-cacheAllPosts();
 
 searchInput.addEventListener("input", e => {
     const q = e.target.value.trim().toLowerCase();
     if (!q) { resetPagination(); loadCategory(currentCategory); return; }
-    contentList.innerHTML = ""; noResultsEl.style.display = "none"; loadMoreBtn.style.display = "none";
+    contentList.innerHTML = "";
+    noResultsEl.style.display = "none";
+    loadMoreBtn.style.display = "none";
+
     const found = allPostsCache.filter(d => {
         const t = (d.title || "").toLowerCase(), c = (d.content || "").toLowerCase();
         return t.includes(q) || c.includes(q);
     });
-    if (found.length === 0) { noResultsEl.style.display = "block"; }
-    else found.forEach(d => contentList.insertAdjacentHTML("beforeend", renderCard(d.id, d)));
-});
 
-// ==== Reset scroll-restore saat judul diklik (INDEX) ====
-
-// Listener ini boleh berdiri sendiri (tidak perlu menunggu DOMContentLoaded)
-const homeTitle = document.getElementById('homeTitle');
-if (homeTitle) {
-    homeTitle.addEventListener('click', (e) => {
-        e.preventDefault();
-        // Set flag lebih awal agar terdeteksi segera setelah reload
-        sessionStorage.setItem('ignoreScrollRestore', 'true');
-        window.location.href = 'index.html';
-    });
-}
-
-// ==== Klik judul situs → selalu ke beranda awal ====
-document.addEventListener("DOMContentLoaded", () => {
-    const homeTitle = document.getElementById("homeTitle");
-    if (homeTitle) {
-        homeTitle.addEventListener("click", (e) => {
-            e.preventDefault();
-
-            // Set flag kuat agar index tahu harus kembali ke Berita
-            sessionStorage.setItem("forceHome", "true");
-
-            // Navigasi ke halaman utama
-            window.location.href = "index.html";
-        });
+    if (found.length === 0) {
+        noResultsEl.style.display = "block";
+    } else {
+        found.forEach(d => contentList.insertAdjacentHTML("beforeend", renderCard(d.id, d)));
     }
 });
 
-/* ===== UTIL: Setel tab aktif di nav sesuai kategori ===== */
+
+/* ===== UTIL: Setel tab aktif ===== */
 function setActiveTab(cat) {
     document.querySelectorAll("nav a").forEach(n => {
         n.classList.toggle("active", n.dataset.tab === cat);
     });
 }
 
-/* ===== SIMPAN STATE SAAT KLIK "BACA SELENGKAPNYA" (dengan debounce ringan) ===== */
+/* ===== SIMPAN STATE SEBELUM KE DETAIL ===== */
 document.addEventListener("click", (e) => {
-    const link = e.target.closest("a.btn");
-    if (link && link.textContent.includes("Baca Selengkapnya")) {
-        // Sedikit tunda agar posisi scroll sudah final saat disimpan
-        setTimeout(() => {
-            const loadedCount = document.querySelectorAll("#contentList .card").length;
-            const state = {
-                scroll: window.scrollY,
-                category: currentCategory,
-                loadedCount // simpan jumlah kartu yang sudah tampil
-            };
-            sessionStorage.setItem("pageState", JSON.stringify(state));
-            sessionStorage.setItem("lastCategory", currentCategory);
-            sessionStorage.setItem("fromDetail", "yes");
-        }, 150); // 150ms cukup, tidak terasa bagi user
+    const link = e.target.closest("a.btn-detail");
+    if (link) {
+        // Simpan state lengkap SEBELUM navigasi
+        const state = {
+            category: currentCategory,
+            scroll: window.scrollY,
+            loadedCount: document.querySelectorAll("#contentList .card").length,
+            timestamp: Date.now()
+        };
+
+        sessionStorage.setItem("pageState", JSON.stringify(state));
+        sessionStorage.setItem("fromDetail", "yes");
+
+        console.log("💾 State saved:", state);
     }
 });
 
-/* ===== SIMPAN KATEGORI TERAKHIR SAAT GANTI TAB ===== */
-document.querySelectorAll("nav a").forEach(a => {
-    a.addEventListener("click", () => {
-        sessionStorage.setItem("lastCategory", a.dataset.tab);
-    });
-});
+async function restorePageState() {
+    const fromDetail = sessionStorage.getItem("fromDetail");
+    const savedState = sessionStorage.getItem("pageState");
 
-/* ===== STARTUP: pulihkan kalau dari detail, jika tidak ya load normal ===== */
-window.addEventListener("load", async () => {
-    // ---- [1] KLIK JUDUL → SELALU KE "AWAL" (Berita, top, tanpa pencarian) ----
-    const ignoreScroll = sessionStorage.getItem("ignoreScrollRestore") === "true";
-    if (ignoreScroll) {
-        console.log("🔁 Navigasi dari judul situs — paksa ke halaman awal");
+    if (fromDetail === "yes" && savedState) {
+        console.log("🔙 Back from detail detected");
+        try {
+            const state = JSON.parse(savedState);
+            console.log("📦 Restoring state:", state);
 
-        // bersihkan flag & state pemulih
-        sessionStorage.removeItem("ignoreScrollRestore");
+            currentCategory = state.category;
+            setActiveTab(currentCategory);
+            resetPagination();
+
+            // Loop untuk memuat ulang konten (mis. jika ada 20 item)
+            let loadCount = 0;
+            const targetCount = state.loadedCount;
+
+            // Kita perlu loop untuk memanggil loadCategory (append=true)
+            // sampai jumlah itemnya sama dengan yang disimpan
+            while (loadCount < targetCount && !reachedEnd) {
+                // panggil loadCategory. 'true' = append
+                await loadCategory(currentCategory, loadCount > 0);
+                loadCount = document.querySelectorAll("#contentList .card").length;
+                if (loadCount === 0) break; // Safety break
+            }
+
+            // Restore scroll
+            setTimeout(() => {
+                window.scrollTo({ top: state.scroll, behavior: "instant" });
+                console.log(`✅ Restored: ${state.category}, scroll=${state.scroll}px`);
+            }, 100);
+
+            sessionStorage.removeItem("fromDetail");
+            return true;
+        } catch (err) {
+            console.error("❌ Restore failed:", err);
+            sessionStorage.removeItem("fromDetail");
+        }
+    }
+    return false;
+}
+// === Ekspor fungsi ke global ===
+window.loadCategory = loadCategory;
+window.setActiveTab = setActiveTab;
+window.resetPagination = resetPagination;
+
+/* ===== FUNGSI STARTUP UTAMA (BARU) ===== */
+async function initApp() {
+    console.log("🚀 DOM siap. Menjalankan aplikasi...");
+
+    // 1. Pasang listener klik judul
+    const homeTitle = document.getElementById("homeTitle");
+    if (homeTitle) {
+        homeTitle.addEventListener("click", (e) => {
+            e.preventDefault();
+            sessionStorage.clear();
+            window.location.href = "index.html";
+        });
+    }
+
+    // 2. Mulai caching UNTUK PENCARIAN di background
+    // Ini akan memanggil 'get-posts' (tanpa parameter)
+    // dan backend akan memberi SEMUA berita
+    cacheAllPosts();
+
+    // 3. Deteksi navigasi "Back"
+    const navEntries = performance.getEntriesByType('navigation');
+    const isBfCache = navEntries.length > 0 && navEntries[0].type === 'back_forward';
+    const fromDetail = sessionStorage.getItem("fromDetail");
+    const savedState = sessionStorage.getItem("pageState");
+
+    if ((isBfCache || fromDetail === "yes") && savedState) {
+        // ----- JALUR 1: PULIHKAN STATE (BACK) -----
+        console.log("🔙 Navigasi 'Back' terdeteksi...");
+        const restored = await restorePageState();
+        if (!restored) {
+            console.warn("⚠️ Gagal pulihkan state, memuat 'Berita'...");
+            await loadCategory("Berita");
+        }
+    } else {
+        // ----- JALUR 2: LOAD NORMAL (FRESH) -----
+        console.log("📄 Load normal (fresh). Memuat kategori...");
         sessionStorage.removeItem("fromDetail");
         sessionStorage.removeItem("pageState");
-        sessionStorage.removeItem("scrollPosition");
 
-        // paksa kategori default = Berita (index awal)
-        sessionStorage.setItem("lastCategory", "Berita");
-        currentCategory = "Berita";
-        setActiveTab("Berita");
-        resetPagination();
-
-        // tutup bar pencarian dan kosongkan query (agar tidak menimpa hasil)
-        if (typeof searchWrap !== "undefined" && searchWrap.classList.contains("open")) {
-            searchWrap.classList.remove("open");
-        }
-        if (typeof searchInput !== "undefined") {
-            searchInput.value = "";
-        }
-
-        await loadCategory("Berita");
-        window.scrollTo({ top: 0, behavior: "auto" });
-        return; // hentikan semua proses restore lainnya
+        const lastCat = sessionStorage.getItem("lastCategory") || "Berita";
+        currentCategory = lastCat;
+        setActiveTab(lastCat);
+        await loadCategory(lastCat); // Ini akan memuat 10 berita pertama
     }
+}
 
-    // ---- [2] Logika restore normal (dari detail) tetap seperti punyamu ----
-    const fromDetail = sessionStorage.getItem("fromDetail") === "yes";
-    const saved = sessionStorage.getItem("pageState");
-    const lastCategory = sessionStorage.getItem("lastCategory") || "Berita";
-
-    const loadNormal = async (cat) => {
-        currentCategory = cat;
-        setActiveTab(cat);
-        resetPagination();
-        await loadCategory(cat);
-    };
-
-    if (!fromDetail || !saved) {
-        await loadNormal(lastCategory);
-        return;
-    }
-
-    try {
-        const { scroll, category, loadedCount } = JSON.parse(saved);
-        currentCategory = category || lastCategory;
-        setActiveTab(currentCategory);
-        resetPagination();
-
-        while (document.querySelectorAll("#contentList .card").length < loadedCount && !reachedEnd) {
-            await loadCategory(currentCategory, true);
-        }
-
-        setTimeout(() => {
-            window.scrollTo({ top: scroll, behavior: "auto" });
-            console.log(`✅ Pulihkan: ${currentCategory}, cards=${loadedCount}, scroll=${scroll}px`);
-        }, 300);
-    } catch (err) {
-        console.warn("Gagal memulihkan state:", err);
-        await loadNormal(lastCategory);
-    }
-
-    sessionStorage.removeItem("fromDetail");
-    sessionStorage.removeItem("pageState");
-});
-
-window.addEventListener('pageshow', (event) => {
-    if (event.persisted) {
-        const saved = sessionStorage.getItem("pageState");
-        if (saved) {
-            const { scroll } = JSON.parse(saved);
-            setTimeout(() => window.scrollTo({ top: scroll, behavior: "auto" }), 100);
-        }
-    }
-});
+// === MULAI APLIKASI ===
+// Kita gunakan DOMContentLoaded karena lebih cepat dari 'load'
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    // DOM sudah siap, jalankan langsung
+    initApp();
+}
 
 /* ==== SERVICE WORKER REGISTER ==== */
 if ('serviceWorker' in navigator) {
@@ -443,5 +500,4 @@ if ('serviceWorker' in navigator) {
             .catch(err => console.error('❌ Gagal daftar SW:', err));
     });
 }
-
 

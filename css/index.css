@@ -6,14 +6,15 @@
     --text-dark: #eee;
     --card-light: #fff;
     --card-dark: #1e1e1e;
-    --accent: #f7b500;
-    --accent-gradient: linear-gradient(135deg, #ffd84d, #f7b500);
+    --accent: #888888;
+    --accent-gradient: linear-gradient(135deg, #d9d9d9, #888888);
 }
 
 html,
 body {
     min-height: 100vh;
-    /* overflow-x: hidden; */ /* Dihapus: Ini mengganggu position:sticky */
+    /* overflow-x: hidden; */
+    /* Dihapus: Ini mengganggu position:sticky */
 }
 
 body {
@@ -36,7 +37,8 @@ header {
     align-items: center;
     padding: 1rem 1.5rem;
     background: rgba(255, 255, 255, .7);
-    /* backdrop-filter: blur(12px); */ /* Dihapus: Ini mengganggu FAB position:fixed */
+    /* backdrop-filter: blur(12px); */
+    /* Dihapus: Ini mengganggu FAB position:fixed */
     position: sticky;
     /* Diubah kembali ke sticky: ini solusi terbaik untuk header dinamis */
     top: 0;

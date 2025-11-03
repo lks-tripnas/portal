@@ -5,8 +5,8 @@
         --text-dark: #eee;
         --card-light: #fff;
         --card-dark: #1e1e1e;
-        --accent: #f7b500;
-        --accent-gradient: linear-gradient(135deg, #ffd84d, #f7b500);
+        --accent: #888888;
+        --accent-gradient: linear-gradient(135deg, #d9d9d9, #888888);
     }
 
     body {

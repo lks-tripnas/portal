@@ -1,20 +1,26 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, getDocs, getDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
-
-const firebaseConfig = {
-    apiKey: "AIzaSyB-7udHLwaIF-PaGfb_yjgf7zkz6wrLKFU",
-    authDomain: "portal-tripnas.firebaseapp.com",
-    projectId: "portal-tripnas",
-    storageBucket: "portal-tripnas.firebasestorage.app",
-    messagingSenderId: "664623452933",
-    appId: "1:664623452933:web:1f6018c0eff3c1a7c09d6c"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+import { getFirestore } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+import {
+    getAuth,
+    signInWithEmailAndPassword,
+    onAuthStateChanged,
+    signOut
+} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import {
+    collection,
+    getDocs,
+    getDoc,
+    query,
+    where,
+    updateDoc,
+    addDoc,
+    doc
+} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+const res = await fetch("https://backend-lks-tripnas.netlify.app/.netlify/functions/get-config");
+const config = await res.json();
+const app = initializeApp(config.firebase);
 const db = getFirestore(app);
-
+const auth = getAuth(app);
 const loginCard = document.getElementById("loginCard");
 const formCard = document.getElementById("formCard");
 const listCard = document.getElementById("listCard");
@@ -316,15 +322,39 @@ function renderOldImages() {
 window.removeOldImage = (url) => { removedImages.add(url); renderOldImages(); };
 
 window.arsipkan = async (id) => {
-    await updateDoc(doc(db, "posts", id), { status: "Arsip" });
-    showModal("Konten diarsipkan.");
-    reloadList();
+    if (!confirm("Yakin ingin mengarsipkan konten ini?")) return;
+    try {
+        const res = await fetch("https://backend-lks-tripnas.netlify.app/.netlify/functions/save-post", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id, status: "Arsip" })
+        });
+        const result = await res.json();
+        if (result.error) throw new Error(result.error);
+        showModal("Konten berhasil diarsipkan.");
+        reloadList();
+    } catch (err) {
+        console.error("Gagal mengarsipkan:", err);
+        showModal("Gagal mengarsipkan: " + err.message);
+    }
 };
+
 window.hapus = async (id) => {
-    await deleteDoc(doc(db, "posts", id));
-    showModal("Konten dihapus.");
-    reloadList();
+    if (!confirm("Yakin ingin menghapus konten ini?")) return;
+    try {
+        const res = await fetch(`https://backend-lks-tripnas.netlify.app/.netlify/functions/delete-post?id=${id}`, {
+            method: "DELETE"
+        });
+        const result = await res.json();
+        if (result.error) throw new Error(result.error);
+        showModal("Konten berhasil dihapus.");
+        reloadList();
+    } catch (err) {
+        console.error("Gagal menghapus:", err);
+        showModal("Gagal menghapus: " + err.message);
+    }
 };
+
 
 function resetForm() {
     EDIT_ID = null;
@@ -362,6 +392,18 @@ async function submitForm() {
     const status = document.getElementById("fStatus").value;
     const slug = document.getElementById("fSlug").value.trim();
 
+    // === Ambil konfigurasi Cloudinary dari backend ===
+    let cloudCfg;
+    try {
+        const resCfg = await fetch("https://backend-lks-tripnas.netlify.app/.netlify/functions/get-config");
+        const cfg = await resCfg.json();
+        cloudCfg = cfg.cloudinary;
+    } catch (err) {
+        console.error("Gagal memuat konfigurasi Cloudinary:", err);
+        alert("Tidak dapat memuat konfigurasi Cloudinary.");
+        return;
+    }
+
     if (slug) {
         const used = await isSlugUsed(slug, EDIT_ID);
         if (used) return showModal("Slug '" + slug + "' sudah dipakai.");
@@ -386,14 +428,18 @@ async function submitForm() {
             const file = fileInput.files[0];
             const formData = new FormData();
             formData.append("file", file);
-            formData.append("upload_preset", "lks_tripnas_unsigned");
+            formData.append("upload_preset", cloudCfg.uploadPreset);
+            // Folder khusus tetap boleh disesuaikan manual:
             formData.append("folder", "struktur-organisasi");
-            const res = await fetch("https://api.cloudinary.com/v1_1/dxkqflxae/image/upload", { method: "POST", body: formData });
+
+            const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudCfg.cloudName}/image/upload`;
+            const res = await fetch(uploadUrl, { method: "POST", body: formData });
             const data = await res.json();
             showLoading(false);
             if (data.secure_url) payload.imageUrl = data.secure_url;
         }
     }
+
     else if (category === "Agenda") {
         const tanggal = document.getElementById("fTanggalAgenda")?.value || "";
         const jam = document.getElementById("fJamAgenda")?.value || "";
@@ -403,44 +449,52 @@ async function submitForm() {
         payload.lokasi = lokasi;
     }
     else {
-        // Berita / Pengumuman (default)
         const fileInput = document.getElementById("fFile");
         const files = fileInput ? fileInput.files : [];
         const keptOld = currentImages.filter(u => !removedImages.has(u));
         const imageUrls = [...keptOld];
+
         if (files.length > 0) {
             showLoading(true);
             for (const file of files) {
                 const formData = new FormData();
                 formData.append("file", file);
-                formData.append("upload_preset", "lks_tripnas_unsigned");
-                formData.append("folder", "lks-tripnas-website");
-                const res = await fetch("https://api.cloudinary.com/v1_1/dxkqflxae/image/upload", { method: "POST", body: formData });
+                formData.append("upload_preset", cloudCfg.uploadPreset);
+                formData.append("folder", cloudCfg.folder); // dari backend
+
+                const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudCfg.cloudName}/image/upload`;
+                const res = await fetch(uploadUrl, { method: "POST", body: formData });
                 const data = await res.json();
                 if (data.secure_url) imageUrls.push(data.secure_url);
             }
             showLoading(false);
         }
+
         payload.images = imageUrls;
     }
 
     try {
-        if (EDIT_ID) {
-            payload.updatedAt = serverTimestamp();
-            await updateDoc(doc(db, "posts", EDIT_ID), payload);
-        } else {
-            payload.createdAt = serverTimestamp();
-            await addDoc(collection(db, "posts"), payload);
-        }
+        const postData = { id: EDIT_ID || null, ...payload };
+        const res = await fetch("https://backend-lks-tripnas.netlify.app/.netlify/functions/save-post", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(postData)
+        });
+
+        const result = await res.json();
+        if (result.error) throw new Error(result.error);
+
         showModal("Konten berhasil disimpan.");
         resetForm();
         reloadList();
     } catch (err) {
+        console.error("Gagal menyimpan:", err);
         showModal("Gagal menyimpan: " + err.message);
     }
+
 }
 
-// === SISTEM TEMA WARNA GLOBAL ===
+// === SISTEM TEMA WARNA GLOBAL (SERVER-SYNC) ===
 const colorThemes = {
     kuning: ["#f7b500", "#ffd84d"],
     biru: ["#007bff", "#5cc6ff"],
@@ -454,24 +508,46 @@ const colorThemes = {
     hijaugelap: ["#0e7a30", "#6dbf73"]
 };
 
-function applyTheme(themeName) {
+async function applyTheme(themeName, save = false) {
     const [accent, accent2] = colorThemes[themeName];
     document.documentElement.style.setProperty("--accent", accent);
     document.documentElement.style.setProperty("--accent2", accent2);
     document.documentElement.style.setProperty("--accent-gradient", `linear-gradient(135deg, ${accent2}, ${accent})`);
-    localStorage.setItem("globalTheme", themeName);
+
+    // Simpan ke server bila diminta
+    if (save) {
+        try {
+            const res = await fetch("https://backend-lks-tripnas.netlify.app/.netlify/functions/save-config", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ theme: themeName })
+            });
+            const result = await res.json();
+            if (result.error) throw new Error(result.error);
+            showModal("Tema berhasil diperbarui untuk semua pengguna!");
+        } catch (err) {
+            console.error("Gagal menyimpan tema:", err);
+            showModal("Gagal menyimpan tema: " + err.message);
+        }
+    }
 }
 
-// Apply tema saat admin dibuka
-const savedTheme = localStorage.getItem("globalTheme");
-if (savedTheme && colorThemes[savedTheme]) {
-    applyTheme(savedTheme);
-}
+// Ambil tema saat halaman admin dibuka
+(async () => {
+    try {
+        const res = await fetch("https://backend-lks-tripnas.netlify.app/.netlify/functions/get-config");
+        const cfg = await res.json();
+        const theme = cfg.theme || "kuning";
+        if (colorThemes[theme]) applyTheme(theme);
+    } catch (err) {
+        console.warn("Gagal memuat tema global:", err);
+    }
+})();
 
-// Klik tombol tema
+// Klik tombol warna
 document.querySelectorAll(".color-btn").forEach(btn => {
     btn.addEventListener("click", () => {
         const theme = btn.dataset.theme;
-        applyTheme(theme);
+        applyTheme(theme, true); // true = simpan ke server
     });
 });
