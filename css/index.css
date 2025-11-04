@@ -200,7 +200,7 @@ body.dark .search-toggle {
 .theme-toggle {
     position: fixed;
     bottom: 20px;
-    left: 20px;
+    right: 20px;
     background: var(--card-light);
     border: none;
     border-radius: 50%;
@@ -381,7 +381,7 @@ footer {
 #cacheStatus {
     position: fixed;
     bottom: 10px;
-    right: 20px;
+    left: 20px;
     font-size: .8rem;
     opacity: .6;
 }
@@ -666,8 +666,8 @@ body.dark #loadingOverlay {
 
     /* Sesuaikan posisi theme-toggle */
     .theme-toggle {
-        left: 65px !important;
-        top: 20px !important;
+        right: 10px !important;
+        top: 15px !important;
         width: 40px !important;
         height: 40px !important;
     }
@@ -694,4 +694,5 @@ body.dark #loadingOverlay {
         font-size: 0.95rem;
         margin-top: 0.6rem;
     }
+
 }
