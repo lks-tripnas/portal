@@ -484,9 +484,8 @@ body.dark #loadingOverlay {
 
         /* Properti FAB */
         position: fixed;
-        bottom: 20px;
-        /* 10px di atas theme-toggle */
-        left: 20px;
+        top: 20px;
+        right: 20px;
         width: 40px;
         height: 40px;
         padding: 10px;
@@ -648,9 +647,8 @@ body.dark #loadingOverlay {
     /* Jadikan search-toggle sebagai FAB */
     .search-toggle {
         position: fixed !important;
-        bottom: 20px;
-        /* 10px di atas hamburger */
-        left: 65px !important;
+        top: 20px;
+        left: 20px !important;
         width: 40px !important;
         height: 40px !important;
         font-size: 1.2rem !important;
@@ -668,8 +666,8 @@ body.dark #loadingOverlay {
 
     /* Sesuaikan posisi theme-toggle */
     .theme-toggle {
-        left: 110px !important;
-        bottom: 20px !important;
+        left: 65px !important;
+        top: 20px !important;
         width: 40px !important;
         height: 40px !important;
     }
