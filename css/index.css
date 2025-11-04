@@ -667,7 +667,7 @@ body.dark #loadingOverlay {
     /* Sesuaikan posisi theme-toggle */
     .theme-toggle {
         right: 10px !important;
-        top: 15px !important;
+        bottom: 15px !important;
         width: 40px !important;
         height: 40px !important;
     }
@@ -696,3 +696,4 @@ body.dark #loadingOverlay {
     }
 
 }
+
