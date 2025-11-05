@@ -8,6 +8,7 @@
     --card-dark: #1e1e1e;
     --accent: #888888;
     --accent-gradient: linear-gradient(135deg, #d9d9d9, #888888);
+    --btn-text: #000;
 }
 
 html,
@@ -117,7 +118,7 @@ header nav a {
 header nav a.active,
 header nav a:hover {
     background: var(--accent);
-    color: #000;
+    color: var(--btn-text);
 }
 
 /* Hamburger (Sembunyi di Desktop) */
@@ -199,13 +200,13 @@ body.dark .search-toggle {
 
 .theme-toggle {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
+    bottom: 15px;
+    right: 10px;
     background: var(--card-light);
     border: none;
     border-radius: 50%;
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     font-size: 1.2rem;
     cursor: pointer;
     display: flex;
@@ -312,7 +313,7 @@ body.dark .doc-info {
     padding: .55rem 1.2rem;
     border-radius: 14px;
     background: var(--accent-gradient);
-    color: #000;
+    color: var(--btn-text);
     font-weight: 600;
     cursor: pointer;
     text-decoration: none;

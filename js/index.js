@@ -1,6 +1,5 @@
 const backendBase = "https://backend-lks-tripnas.netlify.app/.netlify/functions";
 
-// === GLOBAL THEME DARI SERVER ===
 const themes = {
     kuning: ["#f7b500", "#ffd84d"],
     biru: ["#007bff", "#5cc6ff"],
@@ -11,7 +10,20 @@ const themes = {
     jingga: ["#ff7b00", "#ffb347"],
     toska: ["#009688", "#4de1c1"],
     pink: ["#ff4081", "#ff9ac9"],
-    hijaugelap: ["#0e7a30", "#6dbf73"]
+    hijaugelap: ["#0e7a30", "#6dbf73"],
+    emas: ["#d4af37", "#ffef8a"],
+    birutua: ["#003366", "#336699"],
+    unguTua: ["#4b0082", "#9b59b6"],
+    merahmuda: ["#f78da7", "#fbc2eb"],
+    laut: ["#0077b6", "#00b4d8"],
+    hijautua: ["#006400", "#32cd32"]
+};
+
+const getBrightness = hex => {
+    const r = parseInt(hex.slice(1, 3), 16),
+        g = parseInt(hex.slice(3, 5), 16),
+        b = parseInt(hex.slice(5, 7), 16);
+    return (r * 299 + g * 587 + b * 114) / 1000;
 };
 
 (async () => {
@@ -24,6 +36,8 @@ const themes = {
             document.documentElement.style.setProperty("--accent", accent);
             document.documentElement.style.setProperty("--accent2", accent2);
             document.documentElement.style.setProperty("--accent-gradient", `linear-gradient(135deg, ${accent2}, ${accent})`);
+            const bright = getBrightness(accent);
+            document.documentElement.style.setProperty("--btn-text", bright < 128 ? "#fff" : "#000");
         }
     } catch (err) {
         console.warn("Gagal memuat tema global:", err);
@@ -214,7 +228,6 @@ async function loadCategory(cat, append = false) {
     try {
         // Buat URL baru dengan offset
         const url = `${backendBase}/get-posts?category=${encodeURIComponent(cat)}&offset=${offset}`;
-        console.log("Memuat data (fetch) dari:", url);
 
         const res = await fetch(url);
         const posts = await res.json();
@@ -332,7 +345,6 @@ async function cacheAllPosts() {
             throw new Error("Cache yang diterima kosong.");
         }
 
-        console.log(`✅ Cache siap: ${allPostsCache.length} item.`);
         cacheStatus.textContent = `${allPostsCache.length} berita siap dicari 🔎`;
         setTimeout(() => cacheStatus.style.display = "none", 3000);
     } catch (err) {
@@ -386,7 +398,6 @@ document.addEventListener("click", (e) => {
         sessionStorage.setItem("pageState", JSON.stringify(state));
         sessionStorage.setItem("fromDetail", "yes");
 
-        console.log("💾 State saved:", state);
     }
 });
 
@@ -395,10 +406,8 @@ async function restorePageState() {
     const savedState = sessionStorage.getItem("pageState");
 
     if (fromDetail === "yes" && savedState) {
-        console.log("🔙 Back from detail detected");
         try {
             const state = JSON.parse(savedState);
-            console.log("📦 Restoring state:", state);
 
             currentCategory = state.category;
             setActiveTab(currentCategory);
@@ -420,7 +429,6 @@ async function restorePageState() {
             // Restore scroll
             setTimeout(() => {
                 window.scrollTo({ top: state.scroll, behavior: "instant" });
-                console.log(`✅ Restored: ${state.category}, scroll=${state.scroll}px`);
             }, 100);
 
             sessionStorage.removeItem("fromDetail");
@@ -439,7 +447,6 @@ window.resetPagination = resetPagination;
 
 /* ===== FUNGSI STARTUP UTAMA (BARU) ===== */
 async function initApp() {
-    console.log("🚀 DOM siap. Menjalankan aplikasi...");
 
     // 1. Pasang listener klik judul
     const homeTitle = document.getElementById("homeTitle");
@@ -464,7 +471,6 @@ async function initApp() {
 
     if ((isBfCache || fromDetail === "yes") && savedState) {
         // ----- JALUR 1: PULIHKAN STATE (BACK) -----
-        console.log("🔙 Navigasi 'Back' terdeteksi...");
         const restored = await restorePageState();
         if (!restored) {
             console.warn("⚠️ Gagal pulihkan state, memuat 'Berita'...");
@@ -472,7 +478,6 @@ async function initApp() {
         }
     } else {
         // ----- JALUR 2: LOAD NORMAL (FRESH) -----
-        console.log("📄 Load normal (fresh). Memuat kategori...");
         sessionStorage.removeItem("fromDetail");
         sessionStorage.removeItem("pageState");
 
@@ -496,7 +501,6 @@ if (document.readyState === 'loading') {
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
-            .then(() => console.log('✅ Service Worker terdaftar'))
             .catch(err => console.error('❌ Gagal daftar SW:', err));
     });
 }

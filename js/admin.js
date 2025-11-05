@@ -505,14 +505,31 @@ const colorThemes = {
     jingga: ["#ff7b00", "#ffb347"],
     toska: ["#009688", "#4de1c1"],
     pink: ["#ff4081", "#ff9ac9"],
-    hijaugelap: ["#0e7a30", "#6dbf73"]
+    hijaugelap: ["#0e7a30", "#6dbf73"],
+    emas: ["#d4af37", "#ffef8a"],
+    birutua: ["#003366", "#336699"],
+    unguTua: ["#4b0082", "#9b59b6"],
+    merahmuda: ["#f78da7", "#fbc2eb"],
+    laut: ["#0077b6", "#00b4d8"],
+    hijautua: ["#006400", "#32cd32"]
 };
+
+function getBrightness(hex) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return (r * 299 + g * 587 + b * 114) / 1000;
+}
 
 async function applyTheme(themeName, save = false) {
     const [accent, accent2] = colorThemes[themeName];
     document.documentElement.style.setProperty("--accent", accent);
     document.documentElement.style.setProperty("--accent2", accent2);
     document.documentElement.style.setProperty("--accent-gradient", `linear-gradient(135deg, ${accent2}, ${accent})`);
+
+    // 🌈 Sesuaikan warna teks tombol otomatis
+    const bright = getBrightness(accent);
+    document.documentElement.style.setProperty("--btn-text", bright < 128 ? "#fff" : "#000");
 
     // Simpan ke server bila diminta
     if (save) {

@@ -7,6 +7,7 @@
         /* Diubah dari kuning ke abu-abu */
         --accent2: #d9d9d9;
         /* Diubah dari kuning ke abu-abu */
+        --btn-text: #000;
     }
 
     * {
@@ -79,7 +80,7 @@
     .btn {
         display: inline-block;
         background: linear-gradient(135deg, var(--accent2), var(--accent));
-        color: #000;
+        color: var(--btn-text);
         border: none;
         padding: .6rem 1.1rem;
         border-radius: 20px;

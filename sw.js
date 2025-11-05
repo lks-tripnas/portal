@@ -1,4 +1,4 @@
-const CACHE = 'tripnas-v3'; // Ganti ini jadi 'tripnas-v4' jika Anda mengubah file lagi
+const CACHE = 'tripnas-v4'; // Ganti ini jadi 'tripnas-v5' jika Anda mengubah file lagi
 
 // 1. TETAP DIPAKAI: Untuk "mengisi kulkas" saat instalasi
 self.addEventListener('install', e => {
