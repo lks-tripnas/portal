@@ -333,6 +333,7 @@ window.removeOldImage = (url) => { removedImages.add(url); renderOldImages(); };
 
 window.arsipkan = async (id) => {
     if (!confirm("Yakin ingin mengarsipkan konten ini?")) return;
+    showLoading(true);
     try {
         const res = await fetch("https://backend-lks-tripnas.netlify.app/.netlify/functions/save-post", {
             method: "POST",
@@ -346,6 +347,8 @@ window.arsipkan = async (id) => {
     } catch (err) {
         console.error("Gagal mengarsipkan:", err);
         showModal("Gagal mengarsipkan: " + err.message);
+    } finally {
+        showLoading(false);
     }
 };
 
@@ -571,4 +574,3 @@ document.querySelectorAll(".color-btn").forEach(btn => {
         applyTheme(theme, true); // true = simpan ke server
     });
 });
-

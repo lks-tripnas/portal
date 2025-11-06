@@ -11,6 +11,9 @@
   <link rel="stylesheet" href="css/index.css">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#003366">
+  <!-- Warna tema adaptif untuk dark mode -->
+  <meta name="theme-color" content="#003366" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
   <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
   <link rel="apple-touch-icon" href="/assets/favicon-180x180.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -56,25 +59,25 @@
     <div id="noResults" class="no-results" style="display:none;">Tidak ada hasil untuk pencarian ini.</div>
   </main>
 
-<footer
-  style="text-align:center; padding:1.5rem; font-size:0.95rem; line-height:1.6; background:rgba(0,0,0,0.05); border-top:1px solid rgba(0,0,0,0.1);">
-  <div style="margin-bottom:0.8rem;">
-    📍 <a href="https://maps.app.goo.gl/89uHb6s6rfUGrci58" target="_blank" rel="noopener noreferrer"
-      style="color:inherit; text-decoration:underline; font-weight:600;">
-      GRHA Kemnaker
-    </a><br>
-    Jln. Veteran II, No.5, Gambir, Jakarta Pusat, DKI Jakarta - 10110<br>
+  <footer
+    style="text-align:center; padding:1.5rem; font-size:0.95rem; line-height:1.6; background:rgba(0,0,0,0.05); border-top:1px solid rgba(0,0,0,0.1);">
+    <div style="margin-bottom:0.8rem;">
+      📍 <a href="https://maps.app.goo.gl/89uHb6s6rfUGrci58" target="_blank" rel="noopener noreferrer"
+        style="color:inherit; text-decoration:underline; font-weight:600;">
+        GRHA Kemnaker
+      </a><br>
+      Jln. Veteran II, No.5, Gambir, Jakarta Pusat, DKI Jakarta - 10110<br>
 
-    📫 <a href="mailto:sekretariat.tripnas@kemnaker.go.id" style="color:inherit; text-decoration:underline;">
-      sekretariat.tripnas@kemnaker.go.id
-    </a>
-  </div>
+      📫 <a href="mailto:sekretariat.tripnas@kemnaker.go.id" style="color:inherit; text-decoration:underline;">
+        sekretariat.tripnas@kemnaker.go.id
+      </a>
+    </div>
 
-  <div>
-    Hak Cipta © 2025 <strong>LKS Tripartit Nasional</strong>
-  </div>
-</footer>
-  
+    <div>
+      Hak Cipta © 2025 <strong>LKS Tripartit Nasional</strong>
+    </div>
+  </footer>
+
   <div id="cacheStatus">Memuat semua berita...</div>
 
   <script type="module" src="js/index.js" defer></script>

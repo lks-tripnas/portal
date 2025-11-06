@@ -1,59 +1,72 @@
-const CACHE = 'tripnas-v4'; // Ganti ini jadi 'tripnas-v5' jika Anda mengubah file lagi
+const CACHE_NAME = "tripnas-v5";
+const OFFLINE_URL = "/offline.html";
 
-// 1. TETAP DIPAKAI: Untuk "mengisi kulkas" saat instalasi
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll([
-      '/', 
-      '/index.html', 
-      '/css/index.css', 
-      '/js/index.js'
-    ]))
-  );
+self.addEventListener("install", event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache =>
+      cache.addAll([
+        "/",
+        "/index.html",
+        "/detail.html",
+        "/offline.html",
+        "/css/index.css",
+        "/css/detail.css",
+        "/js/index.js",
+        "/js/detail.js",
+        "/assets/favicon.ico",
+        "/assets/favicon-72x72.png",
+        "/assets/favicon-192x192.png",
+        "/assets/favicon-512x512.png",
+        "/site.webmanifest"
+      ])
+    )
+  );
+  self.skipWaiting();
 });
 
-// 2. TETAP DIPAKAI: Untuk membersihkan cache lama (v1, v2, dst)
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.filter(k => k !== CACHE).map(k => caches.delete(k))
-    ))
-  );
+self.addEventListener("activate", event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+    )
+  );
+  self.clients.claim();
+
+  // Kirim pesan versi baru ke semua tab
+  self.clients.matchAll({ type: "window" }).then(clients => {
+    clients.forEach(client =>
+      client.postMessage({ type: "NEW_VERSION", version: CACHE_NAME })
+    );
+  });
 });
 
-// 3. DIGANTI: Menggunakan strategi Stale-While-Revalidate (SWR)
-self.addEventListener('fetch', e => {
-  // Hanya proses request GET
-  if (e.request.method !== 'GET') {
+self.addEventListener("fetch", event => {
+  const req = event.request;
+  const url = new URL(req.url);
+
+  if (
+    req.method !== "GET" ||
+    url.pathname.startsWith("/admin") ||
+    req.url.includes("/.netlify/functions/") ||
+    req.url.includes("cloudinary.com")
+  ) {
     return;
   }
 
-  e.respondWith(
-    caches.open(CACHE).then(cache => {
-      // 1. Coba ambil dari cache dulu (Stale)
-      return cache.match(e.request).then(cachedResponse => {
-        
-        // 2. Selalu coba ambil dari network (Revalidate)
-        const fetchPromise = fetch(e.request).then(networkResponse => {
-          // Jika sukses, update cache
-          // Pastikan networkResponse valid sebelum di-cache
-          if (networkResponse && networkResponse.status === 200) {
-            cache.put(e.request, networkResponse.clone());
-          }
-          return networkResponse;
-        }).catch(err => {
-          // Gagal fetch (mungkin offline)
-          // Jika kita punya respons dari cache, itu sudah dikembalikan
-          // Jika tidak, ini akan melempar error (atau Anda bisa kembalikan halaman offline custom)
-          console.error('Fetch failed:', err);
-          throw err;
-        });
-        
-        // 3. Kembalikan hasil
-        // Jika ada di cache, langsung kembalikan (biar cepat)
-        // Jika tidak ada di cache, tunggu hasil fetch
-        return cachedResponse || fetchPromise;
-      });
-    })
+  event.respondWith(
+    caches.open(CACHE_NAME).then(cache =>
+      cache.match(req).then(cachedResponse => {
+        const networkFetch = fetch(req)
+          .then(networkResponse => {
+            if (networkResponse && networkResponse.ok && networkResponse.type === "basic") {
+              cache.put(req, networkResponse.clone());
+            }
+            return networkResponse;
+          })
+          .catch(() => cachedResponse || caches.match(OFFLINE_URL));
+
+        return cachedResponse || networkFetch;
+      })
+    )
   );
 });
