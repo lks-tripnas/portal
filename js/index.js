@@ -1,5 +1,17 @@
 const backendBase = "https://backend-lks-tripnas.netlify.app/.netlify/functions";
 
+// === AMBIL TEMA GLOBAL DARI SERVER ===
+(async () => {
+  try {
+    const res = await fetch(`${backendBase}/get-config`);
+    const cfg = await res.json();
+    const theme = cfg.theme || "kuning";
+    if (theme && colorThemes[theme]) applyTheme(theme);
+  } catch (err) {
+    console.warn("Gagal memuat tema global:", err);
+  }
+})();
+
 // === SISTEM TEMA WARNA GLOBAL (SERVER-SYNC) ===
 const colorThemes = {
     kuning: ["#eab308", "#fde68a", "#000"],
