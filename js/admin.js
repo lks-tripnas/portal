@@ -351,6 +351,7 @@ window.arsipkan = async (id) => {
 
 window.hapus = async (id) => {
     if (!confirm("Yakin ingin menghapus konten ini?")) return;
+    showLoading(true);
     try {
         const res = await fetch(`https://backend-lks-tripnas.netlify.app/.netlify/functions/delete-post?id=${id}`, {
             method: "DELETE"
@@ -362,9 +363,10 @@ window.hapus = async (id) => {
     } catch (err) {
         console.error("Gagal menghapus:", err);
         showModal("Gagal menghapus: " + err.message);
+    } finally {
+        showLoading(false);
     }
 };
-
 
 function resetForm() {
     EDIT_ID = null;
@@ -569,3 +571,4 @@ document.querySelectorAll(".color-btn").forEach(btn => {
         applyTheme(theme, true); // true = simpan ke server
     });
 });
+
