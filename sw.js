@@ -1,4 +1,4 @@
-const CACHE_NAME = "tripnas-v5";
+const CACHE_NAME = "tripnas-v6"; // naikkan versi agar cache lama dibersihkan
 const OFFLINE_URL = "/offline.html";
 
 self.addEventListener("install", event => {
@@ -44,15 +44,18 @@ self.addEventListener("fetch", event => {
   const req = event.request;
   const url = new URL(req.url);
 
+  // 🚫 Jangan cache halaman admin, Cloudinary, API backend, dan get-config
   if (
     req.method !== "GET" ||
     url.pathname.startsWith("/admin") ||
+    req.url.includes("/.netlify/functions/get-config") || // ⬅️ Tambahan penting
     req.url.includes("/.netlify/functions/") ||
     req.url.includes("cloudinary.com")
   ) {
     return;
   }
 
+  // ✅ Untuk permintaan publik biasa, gunakan SWR + fallback offline
   event.respondWith(
     caches.open(CACHE_NAME).then(cache =>
       cache.match(req).then(cachedResponse => {
