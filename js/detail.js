@@ -1,46 +1,47 @@
-const themes = {
-  kuning: ["#f7b500", "#ffd84d"],
-  biru: ["#007bff", "#5cc6ff"],
-  merah: ["#e60023", "#ff7b7b"],
-  hijau: ["#78ffd6", "#a8ff78"],
-  ungu: ["#9333ea", "#c084fc"],
-  abu: ["#888888", "#d9d9d9"],
-  jingga: ["#ff7b00", "#ffb347"],
-  toska: ["#009688", "#4de1c1"],
-  pink: ["#ff4081", "#ff9ac9"],
-  hijaugelap: ["#0e7a30", "#6dbf73"],
-  emas: ["#d4af37", "#ffef8a"],
-  birutua: ["#003366", "#336699"],
-  unguTua: ["#4b0082", "#9b59b6"],
-  merahmuda: ["#f78da7", "#fbc2eb"],
-  laut: ["#0077b6", "#00b4d8"],
-  hijautua: ["#006400", "#32cd32"]
+// === SISTEM TEMA WARNA GLOBAL (SERVER-SYNC) ===
+const colorThemes = {
+  kuning: ["#eab308", "#fde68a", "#000"],
+  emas: ["#c59d2f", "#ffe08a", "#000"],
+  jingga: ["#fb923c", "#fed7aa", "#000"],
+  merah: ["#dc2626", "#fca5a5", "#fff"],
+  merahmuda: ["#ec4899", "#f9a8d4", "#fff"],
+  pink: ["#e91e63", "#ff80ab", "#fff"],
+  ungu: ["#8b5cf6", "#c4b5fd", "#fff"],
+  unguTua: ["#5b21b6", "#a78bfa", "#fff"],
+  biru: ["#2563eb", "#93c5fd", "#fff"],
+  birutua: ["#1e3a8a", "#3b82f6", "#fff"],
+  laut: ["#0284c7", "#7dd3fc", "#fff"],
+  toska: ["#0d9488", "#5eead4", "#fff"],
+  hijau: ["#16a34a", "#86efac", "#fff"],
+  hijautua: ["#065f46", "#34d399", "#fff"],
+  hijaugelap: ["#166534", "#6ee7b7", "#fff"],
+  abu: ["#9ca3af", "#d1d5db", "#000"]
 };
 
-const getBrightness = hex => {
-  const r = parseInt(hex.slice(1, 3), 16),
-        g = parseInt(hex.slice(3, 5), 16),
-        b = parseInt(hex.slice(5, 7), 16);
-  return (r * 299 + g * 587 + b * 114) / 1000;
-};
+async function applyTheme(themeName, save = false) {
+  const [accent, accent2, textColor] = colorThemes[themeName];
+  document.documentElement.style.setProperty("--accent", accent);
+  document.documentElement.style.setProperty("--accent2", accent2);
+  document.documentElement.style.setProperty("--accent-gradient", `linear-gradient(135deg, ${accent2}, ${accent})`);
+  document.documentElement.style.setProperty("--btn-text", textColor);
 
-(async () => {
-  try {
-    const res = await fetch("https://backend-lks-tripnas.netlify.app/.netlify/functions/get-config");
-    const cfg = await res.json();
-    const themeName = cfg.theme || "kuning";
-    if (themes[themeName]) {
-      const [accent, accent2] = themes[themeName];
-      document.documentElement.style.setProperty("--accent", accent);
-      document.documentElement.style.setProperty("--accent2", accent2);
-      document.documentElement.style.setProperty("--accent-gradient", `linear-gradient(135deg, ${accent2}, ${accent})`);
-      const bright = getBrightness(accent);
-      document.documentElement.style.setProperty("--btn-text", bright < 128 ? "#fff" : "#000");
+  // Simpan ke server bila diminta
+  if (save) {
+    try {
+      const res = await fetch("https://backend-lks-tripnas.netlify.app/.netlify/functions/save-config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ theme: themeName })
+      });
+      const result = await res.json();
+      if (result.error) throw new Error(result.error);
+      showModal("Tema berhasil diperbarui untuk semua pengguna!");
+    } catch (err) {
+      console.error("Gagal menyimpan tema:", err);
+      showModal("Gagal menyimpan tema: " + err.message);
     }
-  } catch (err) {
-    console.warn("Gagal memuat tema global:", err);
   }
-})();
+}
 
 /* THEME */
 const themeToggle = document.getElementById("themeToggle");

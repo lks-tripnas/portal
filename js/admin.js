@@ -79,10 +79,13 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = document.getElementById("loginEmail").value;
     const pw = document.getElementById("loginPassword").value;
+    showLoading(true);
     try {
         await signInWithEmailAndPassword(auth, email, pw);
     } catch {
         document.getElementById("loginMsg").textContent = "Login gagal";
+    } finally {
+        showLoading(false);
     }
 });
 
@@ -99,7 +102,14 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-document.getElementById("logoutBtn").onclick = () => signOut(auth);
+document.getElementById("logoutBtn").onclick = async () => {
+    showLoading(true);
+    try {
+        await signOut(auth);
+    } finally {
+        showLoading(false);
+    }
+};
 document.getElementById("resetBtn").onclick = () => resetForm();
 document.getElementById("saveBtn").onclick = () => submitForm();
 filterKategori.addEventListener("change", () => reloadList());
@@ -473,6 +483,7 @@ async function submitForm() {
         payload.images = imageUrls;
     }
 
+    showLoading(true);
     try {
         const postData = { id: EDIT_ID || null, ...payload };
         const res = await fetch("https://backend-lks-tripnas.netlify.app/.netlify/functions/save-post", {
@@ -490,49 +501,39 @@ async function submitForm() {
     } catch (err) {
         console.error("Gagal menyimpan:", err);
         showModal("Gagal menyimpan: " + err.message);
-    }
-
+    } finally { showLoading(false); }
 }
 
 // === SISTEM TEMA WARNA GLOBAL (SERVER-SYNC) ===
 const colorThemes = {
-    kuning: ["#f7b500", "#ffd84d"],
-    biru: ["#007bff", "#5cc6ff"],
-    merah: ["#e60023", "#ff7b7b"],
-    hijau: ["#78ffd6", "#a8ff78"],
-    ungu: ["#9333ea", "#c084fc"],
-    abu: ["#888888", "#d9d9d9"],
-    jingga: ["#ff7b00", "#ffb347"],
-    toska: ["#009688", "#4de1c1"],
-    pink: ["#ff4081", "#ff9ac9"],
-    hijaugelap: ["#0e7a30", "#6dbf73"],
-    emas: ["#d4af37", "#ffef8a"],
-    birutua: ["#003366", "#336699"],
-    unguTua: ["#4b0082", "#9b59b6"],
-    merahmuda: ["#f78da7", "#fbc2eb"],
-    laut: ["#0077b6", "#00b4d8"],
-    hijautua: ["#006400", "#32cd32"]
+    kuning: ["#eab308", "#fde68a", "#000"],
+    emas: ["#c59d2f", "#ffe08a", "#000"],
+    jingga: ["#fb923c", "#fed7aa", "#000"],
+    merah: ["#dc2626", "#fca5a5", "#fff"],
+    merahmuda: ["#ec4899", "#f9a8d4", "#fff"],
+    pink: ["#e91e63", "#ff80ab", "#fff"],
+    ungu: ["#8b5cf6", "#c4b5fd", "#fff"],
+    unguTua: ["#5b21b6", "#a78bfa", "#fff"],
+    biru: ["#2563eb", "#93c5fd", "#fff"],
+    birutua: ["#1e3a8a", "#3b82f6", "#fff"],
+    laut: ["#0284c7", "#7dd3fc", "#fff"],
+    toska: ["#0d9488", "#5eead4", "#fff"],
+    hijau: ["#16a34a", "#86efac", "#fff"],
+    hijautua: ["#065f46", "#34d399", "#fff"],
+    hijaugelap: ["#166534", "#6ee7b7", "#fff"],
+    abu: ["#9ca3af", "#d1d5db", "#000"]
 };
 
-function getBrightness(hex) {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return (r * 299 + g * 587 + b * 114) / 1000;
-}
-
 async function applyTheme(themeName, save = false) {
-    const [accent, accent2] = colorThemes[themeName];
+    const [accent, accent2, textColor] = colorThemes[themeName];
     document.documentElement.style.setProperty("--accent", accent);
     document.documentElement.style.setProperty("--accent2", accent2);
     document.documentElement.style.setProperty("--accent-gradient", `linear-gradient(135deg, ${accent2}, ${accent})`);
-
-    // 🌈 Sesuaikan warna teks tombol otomatis
-    const bright = getBrightness(accent);
-    document.documentElement.style.setProperty("--btn-text", bright < 128 ? "#fff" : "#000");
+    document.documentElement.style.setProperty("--btn-text", textColor);
 
     // Simpan ke server bila diminta
     if (save) {
+        showLoading(true);
         try {
             const res = await fetch("https://backend-lks-tripnas.netlify.app/.netlify/functions/save-config", {
                 method: "POST",
@@ -545,7 +546,7 @@ async function applyTheme(themeName, save = false) {
         } catch (err) {
             console.error("Gagal menyimpan tema:", err);
             showModal("Gagal menyimpan tema: " + err.message);
-        }
+        } finally { showLoading(false); }
     }
 }
 
