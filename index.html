@@ -82,6 +82,51 @@
 
   <script type="module" src="js/index.js" defer></script>
 
+  <script>
+    let deferredPrompt;
+
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+
+      // Buat tombol install di kiri bawah
+      const btn = document.createElement("button");
+      btn.textContent = "📱 Install Portal LKS Tripnas";
+      Object.assign(btn.style, {
+        position: "fixed",
+        bottom: "30px",
+        left: "20px",
+        padding: "12px 18px",
+        background: "#003366",
+        color: "#fff",
+        border: "none",
+        borderRadius: "10px",
+        fontSize: "15px",
+        fontWeight: "600",
+        cursor: "pointer",
+        boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+        zIndex: 9999,
+        transition: "opacity 0.3s ease",
+      });
+
+      document.body.appendChild(btn);
+
+      btn.addEventListener("click", async () => {
+        btn.style.opacity = "0";
+        setTimeout(() => (btn.style.display = "none"), 300);
+
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User response: ${outcome}`);
+        deferredPrompt = null;
+      });
+    });
+
+    window.addEventListener("appinstalled", () => {
+      console.log("✅ PWA berhasil diinstal");
+    });
+  </script>
+
 </body>
 
 </html>
