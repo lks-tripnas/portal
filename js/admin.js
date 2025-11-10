@@ -486,7 +486,7 @@ async function submitForm() {
                     if (!["Struktur Organisasi", "Agenda", "Peraturan"].includes(category)) {
                         const optimizedUrl = data.secure_url.replace(
                             "/upload/",
-                            "/upload/f_auto,q_auto,dpr_auto,w_600/"
+                            "/upload/f_auto,q_auto,dpr_auto,w_1024/"
                         );
                         imageUrls.push(optimizedUrl);
                         console.log("Optimized:", optimizedUrl);
@@ -589,3 +589,4 @@ document.querySelectorAll(".color-btn").forEach(btn => {
         applyTheme(theme, true); // true = simpan ke server
     });
 });
+
