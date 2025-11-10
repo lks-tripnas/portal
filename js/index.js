@@ -2,14 +2,14 @@ const backendBase = "https://backend-lks-tripnas.netlify.app/.netlify/functions"
 
 // === AMBIL TEMA GLOBAL DARI SERVER ===
 (async () => {
-  try {
-    const res = await fetch(`${backendBase}/get-config`);
-    const cfg = await res.json();
-    const theme = cfg.theme || "kuning";
-    if (theme && colorThemes[theme]) applyTheme(theme);
-  } catch (err) {
-    console.warn("Gagal memuat tema global:", err);
-  }
+    try {
+        const res = await fetch(`${backendBase}/get-config`);
+        const cfg = await res.json();
+        const theme = cfg.theme || "kuning";
+        if (theme && colorThemes[theme]) applyTheme(theme);
+    } catch (err) {
+        console.warn("Gagal memuat tema global:", err);
+    }
 })();
 
 // === SISTEM TEMA WARNA GLOBAL (SERVER-SYNC) ===
@@ -518,3 +518,153 @@ if ('serviceWorker' in navigator) {
     });
 }
 
+let deferredPrompt;
+
+window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+
+    // Jangan tampilkan kalau sudah pernah install
+    if (localStorage.getItem("pwa_installed") === "true") return;
+
+    // === Buat tombol Install di kiri bawah ===
+    const btn = document.createElement("button");
+    btn.textContent = "🔥 Install LKS Tripnas";
+    Object.assign(btn.style, {
+        position: "fixed",
+        bottom: "10px",
+        left: "10px",
+        padding: "12px 20px",
+        border: "none",
+        borderRadius: "14px",
+        fontSize: "15px",
+        fontWeight: "600",
+        cursor: "pointer",
+        zIndex: 9999,
+        boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+        transition: "all 0.3s ease",
+    });
+
+    // === Warna tombol adaptif (tema terang/gelap) ===
+    const setButtonTheme = () => {
+        const dark = document.body.classList.contains("dark");
+        if (dark) {
+            btn.style.background = "#f9f9fb";
+            btn.style.color = "#003366";
+        } else {
+            btn.style.background = "linear-gradient(135deg, #003366, #0055aa)";
+            btn.style.color = "#fff";
+        }
+    };
+    setButtonTheme();
+    document.body.appendChild(btn);
+
+    // Amati perubahan tema
+    const observer = new MutationObserver(setButtonTheme);
+    observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+
+    // === Hilang otomatis setelah 1 menit ===
+    setTimeout(() => {
+        if (document.body.contains(btn)) {
+            btn.style.opacity = "0";
+            setTimeout(() => btn.remove(), 500);
+        }
+    }, 5000); // 5 detik
+
+    // === Klik tombol Install ===
+    btn.addEventListener("click", async () => {
+        btn.style.opacity = "0";
+        setTimeout(() => btn.remove(), 300);
+
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User response: ${outcome}`);
+        if (outcome === "accepted") {
+            localStorage.setItem("pwa_installed", "true");
+        }
+        deferredPrompt = null;
+    });
+});
+
+// === Saat aplikasi berhasil diinstal ===
+window.addEventListener("appinstalled", () => {
+    console.log("✅ PWA berhasil diinstal");
+    localStorage.setItem("pwa_installed", "true");
+});
+
+// === PWA INSTALL HANDLER ===
+window.addEventListener("DOMContentLoaded", () => {
+  let deferredPrompt;
+
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+
+    // Jangan tampilkan kalau sudah pernah install
+    if (localStorage.getItem("pwa_installed") === "true") return;
+
+    // === Buat tombol Install di kiri bawah ===
+    const btn = document.createElement("button");
+    btn.textContent = "🔥 Install LKS Tripnas";
+    Object.assign(btn.style, {
+      position: "fixed",
+      bottom: "10px",
+      left: "10px",
+      padding: "12px 20px",
+      border: "none",
+      borderRadius: "14px",
+      fontSize: "15px",
+      fontWeight: "600",
+      cursor: "pointer",
+      zIndex: 9999,
+      boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+      transition: "all 0.3s ease",
+    });
+
+    // === Warna tombol adaptif (tema terang/gelap) ===
+    const setButtonTheme = () => {
+      const dark = document.body.classList.contains("dark");
+      if (dark) {
+        btn.style.background = "#f9f9fb";
+        btn.style.color = "#003366";
+      } else {
+        btn.style.background = "linear-gradient(135deg, #003366, #0055aa)";
+        btn.style.color = "#fff";
+      }
+    };
+    setButtonTheme();
+    document.body.appendChild(btn);
+
+    // Amati perubahan tema
+    const observer = new MutationObserver(setButtonTheme);
+    observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+
+    // === Hilang otomatis setelah 1 menit ===
+    setTimeout(() => {
+      if (document.body.contains(btn)) {
+        btn.style.opacity = "0";
+        setTimeout(() => btn.remove(), 500);
+      }
+    }, 5000); // 5 detik
+
+    // === Klik tombol Install ===
+    btn.addEventListener("click", async () => {
+      btn.style.opacity = "0";
+      setTimeout(() => btn.remove(), 300);
+
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`User response: ${outcome}`);
+      if (outcome === "accepted") {
+        localStorage.setItem("pwa_installed", "true");
+      }
+      deferredPrompt = null;
+    });
+  });
+
+  // === Saat aplikasi berhasil diinstal ===
+  window.addEventListener("appinstalled", () => {
+    console.log("✅ PWA berhasil diinstal");
+    localStorage.setItem("pwa_installed", "true");
+  });
+});
