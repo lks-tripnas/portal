@@ -27,7 +27,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 1rem;
+        padding: 0.5rem 0.8rem;
         /* backdrop-filter: blur(12px); */
         background: rgba(255, 255, 255, .7);
         position: sticky;
@@ -42,17 +42,16 @@
     }
 
     header h2 {
-        margin: 0;
-        font-size: 1.1rem;
-        line-height: 1.4;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 1rem;
+        /* samakan */
+        line-height: 1.2;
+        /* tambahkan */
     }
 
-    /* font header retro */
-    header h2 {
-        font-family: 'Share Tech Mono', monospace;
-        font-size: 0.9rem;
-        /* sedikit lebih kecil */
-    }
 
     .btn {
         display: inline-block;
@@ -88,6 +87,45 @@
         align-items: center;
         justify-content: center;
         box-shadow: 0 2px 6px rgba(0, 0, 0, .2);
+    }
+
+
+    /* ==== Tombol WhatsApp Floating ==== */
+    .wa-floating {
+        position: fixed;
+        bottom: 15px;
+        left: 10px;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        z-index: 2000;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+
+        /* animasi awal tersembunyi */
+        opacity: 0;
+        transform: translateX(-60px);
+        transition: transform 1s ease, opacity 1s ease;
+    }
+
+    /* Saat sudah muncul (setelah 8 detik via JS) */
+    .wa-floating.show {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* Efek hover */
+    .wa-floating:hover {
+        transform: translateX(0) scale(1.1);
+    }
+
+    /* Desktop: ikon lebih besar */
+    @media (min-width: 900px) {
+        .wa-floating {
+            width: 80px;
+            height: 80px;
+            bottom: 15px;
+            left: 10px;
+        }
     }
 
     body.dark .theme-toggle {
@@ -371,4 +409,91 @@
             background: none;
             box-shadow: none;
         }
+    }
+
+    /* ==== Gradien Lembut Latar Belakang Dinamis ==== */
+    body {
+        background: linear-gradient(180deg,
+                color-mix(in srgb, var(--accent2) 10%, #ffffff) 0%,
+                color-mix(in srgb, var(--accent) 5%, #f9fafc) 40%,
+                color-mix(in srgb, var(--accent2) 8%, #eef3f8) 100%);
+        background-attachment: fixed;
+        color: var(--text-light);
+        transition: background 0.6s ease, color 0.3s ease;
+    }
+
+    /* Mode gelap: tetap gunakan nuansa tema tapi lebih gelap */
+    body.dark {
+        background: linear-gradient(180deg,
+                color-mix(in srgb, var(--accent) 25%, #0f172a) 0%,
+                color-mix(in srgb, var(--accent2) 20%, #1e293b) 50%,
+                color-mix(in srgb, var(--accent) 15%, #334155) 100%);
+        color: var(--text-dark);
+    }
+
+    /* Cahaya lembut kanan bawah menyesuaikan warna tema */
+    body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: -1;
+        background: radial-gradient(circle at 80% 100%,
+                color-mix(in srgb, var(--accent) 25%, transparent),
+                transparent 70%);
+        opacity: 0.6;
+        filter: blur(40px);
+        transition: background 0.6s ease, opacity 0.4s ease;
+    }
+
+    /* ==== Footer Netral dari Gradasi ==== */
+    footer {
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(8px);
+        border-top: 1px solid rgba(0, 0, 0, 0.06);
+        color: var(--text-light);
+        position: relative;
+        z-index: 10;
+    }
+
+    body.dark footer {
+        background: rgba(18, 18, 18, 0.9);
+        backdrop-filter: blur(8px);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        color: var(--text-dark);
+    }
+
+    /* ==== Warna Ikon Sosial Adaptif ==== */
+    :root {
+        --icon-email: #003366;
+        /* biru tua Tripnas */
+        --icon-instagram: #c13584;
+        /* magenta khas Instagram */
+        --icon-tiktok: #010101;
+        /* hitam TikTok */
+    }
+
+    body.dark {
+        --icon-email: #5ea6ff;
+        /* biru lembut agar terlihat di dark mode */
+        --icon-instagram: #ff77c7;
+        /* pink terang */
+        --icon-tiktok: #ffffff;
+        /* putih agar tetap jelas */
+    }
+
+    /* ==== Efek Hover & Transisi Ikon Sosial Footer ==== */
+    footer svg {
+        opacity: 0.9;
+        transition: opacity 0.3s ease, transform 0.3s ease, fill 0.4s ease;
+    }
+
+    footer a:hover svg {
+        transform: scale(1.15);
+        opacity: 1;
+    }
+
+    footer a:focus-visible svg {
+        outline: 2px solid var(--accent);
+        outline-offset: 4px;
     }

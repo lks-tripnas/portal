@@ -63,22 +63,20 @@ if (themeToggle) {
     themeToggle.addEventListener("click", () => {
         document.body.classList.toggle("dark");
         localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light");
-
-        // ⬇️ 1. Ikon di sini dibalik
         themeToggle.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
     });
 
-    // LOGIKA BARU: Default ke Gelap
-    if (localStorage.getItem("theme") === "light") {
-        // Jika HANYA 'light' yang tersimpan, biarkan terang
-        document.body.classList.remove("dark");
-        // ⬇️ 2. Ikon di sini dibalik
-        themeToggle.textContent = "🌙";
-    } else {
-        // Jika 'dark' atau null (kunjungan pertama), set ke gelap
+    // === DEFAULT KE TERANG ===
+    const savedTheme = localStorage.getItem("theme");
+
+    if (savedTheme === "dark") {
         document.body.classList.add("dark");
-        // ⬇️ 3. Ikon di sini juga dibalik
         themeToggle.textContent = "☀️";
+    } else {
+        // jika null atau "light"
+        document.body.classList.remove("dark");
+        themeToggle.textContent = "🌙";
+        localStorage.setItem("theme", "light"); // simpan agar konsisten
     }
 }
 
@@ -594,77 +592,105 @@ window.addEventListener("appinstalled", () => {
 
 // === PWA INSTALL HANDLER ===
 window.addEventListener("DOMContentLoaded", () => {
-  let deferredPrompt;
+    let deferredPrompt;
 
-  window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
+    window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
 
-    // Jangan tampilkan kalau sudah pernah install
-    if (localStorage.getItem("pwa_installed") === "true") return;
+        // Jangan tampilkan kalau sudah pernah install
+        if (localStorage.getItem("pwa_installed") === "true") return;
 
-    // === Buat tombol Install di kiri bawah ===
-    const btn = document.createElement("button");
-    btn.textContent = "🔥 Install LKS Tripnas";
-    Object.assign(btn.style, {
-      position: "fixed",
-      bottom: "10px",
-      left: "10px",
-      padding: "12px 20px",
-      border: "none",
-      borderRadius: "14px",
-      fontSize: "15px",
-      fontWeight: "600",
-      cursor: "pointer",
-      zIndex: 9999,
-      boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
-      transition: "all 0.3s ease",
+        // === Buat tombol Install di kiri bawah ===
+        const btn = document.createElement("button");
+        btn.textContent = "🔥 Install LKS Tripnas";
+        Object.assign(btn.style, {
+            position: "fixed",
+            bottom: "10px",
+            left: "10px",
+            padding: "12px 20px",
+            border: "none",
+            borderRadius: "14px",
+            fontSize: "15px",
+            fontWeight: "600",
+            cursor: "pointer",
+            zIndex: 9999,
+            boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+            transition: "all 0.3s ease",
+        });
+
+        // === Warna tombol adaptif (tema terang/gelap) ===
+        const setButtonTheme = () => {
+            const dark = document.body.classList.contains("dark");
+            if (dark) {
+                btn.style.background = "#f9f9fb";
+                btn.style.color = "#003366";
+            } else {
+                btn.style.background = "linear-gradient(135deg, #003366, #0055aa)";
+                btn.style.color = "#fff";
+            }
+        };
+        setButtonTheme();
+        document.body.appendChild(btn);
+
+        // Amati perubahan tema
+        const observer = new MutationObserver(setButtonTheme);
+        observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+
+        // === Hilang otomatis setelah 1 menit ===
+        setTimeout(() => {
+            if (document.body.contains(btn)) {
+                btn.style.opacity = "0";
+                setTimeout(() => btn.remove(), 500);
+            }
+        }, 5000); // 5 detik
+
+        // === Klik tombol Install ===
+        btn.addEventListener("click", async () => {
+            btn.style.opacity = "0";
+            setTimeout(() => btn.remove(), 300);
+
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response: ${outcome}`);
+            if (outcome === "accepted") {
+                localStorage.setItem("pwa_installed", "true");
+            }
+            deferredPrompt = null;
+        });
     });
 
-    // === Warna tombol adaptif (tema terang/gelap) ===
-    const setButtonTheme = () => {
-      const dark = document.body.classList.contains("dark");
-      if (dark) {
-        btn.style.background = "#f9f9fb";
-        btn.style.color = "#003366";
-      } else {
-        btn.style.background = "linear-gradient(135deg, #003366, #0055aa)";
-        btn.style.color = "#fff";
-      }
-    };
-    setButtonTheme();
-    document.body.appendChild(btn);
-
-    // Amati perubahan tema
-    const observer = new MutationObserver(setButtonTheme);
-    observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
-
-    // === Hilang otomatis setelah 1 menit ===
-    setTimeout(() => {
-      if (document.body.contains(btn)) {
-        btn.style.opacity = "0";
-        setTimeout(() => btn.remove(), 500);
-      }
-    }, 5000); // 5 detik
-
-    // === Klik tombol Install ===
-    btn.addEventListener("click", async () => {
-      btn.style.opacity = "0";
-      setTimeout(() => btn.remove(), 300);
-
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      console.log(`User response: ${outcome}`);
-      if (outcome === "accepted") {
+    // === Saat aplikasi berhasil diinstal ===
+    window.addEventListener("appinstalled", () => {
+        console.log("✅ PWA berhasil diinstal");
         localStorage.setItem("pwa_installed", "true");
-      }
-      deferredPrompt = null;
     });
-  });
-
-  // === Saat aplikasi berhasil diinstal ===
-  window.addEventListener("appinstalled", () => {
-    console.log("✅ PWA berhasil diinstal");
-    localStorage.setItem("pwa_installed", "true");
-  });
 });
+
+// === Floating WhatsApp Icon ===
+const waButton = document.getElementById("waButton");
+
+if (waButton) {
+    // Fungsi untuk update ikon sesuai ukuran layar
+    const updateIcon = () => {
+        waButton.src = window.innerWidth >= 900
+            ? "assets/halo-desktop.png"
+            : "assets/halo-mobile.png";
+    };
+
+    // Jalankan saat awal & saat resize
+    updateIcon();
+    window.addEventListener("resize", updateIcon);
+
+    // Klik langsung buka WhatsApp
+    waButton.addEventListener("click", () => {
+        window.open("https://wa.me/628111386611", "_blank");
+    });
+
+    // Efek muncul dari kiri ke kanan setelah 8 detik loading page
+    window.addEventListener("load", () => {
+        setTimeout(() => {
+            waButton.classList.add("show");
+        }, 5000); // 5 detik
+    });
+}

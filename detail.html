@@ -29,21 +29,52 @@
   <button class="theme-toggle" id="themeToggle">☀️</button>
   <main id="detailContainer"></main>
 
-  <footer
-    style="text-align:center; padding:1.5rem; font-size:0.95rem; line-height:1.6; background:rgba(0,0,0,0.05); border-top:1px solid rgba(0,0,0,0.1);">
-    <div style="margin-bottom:0.8rem;">
+  <footer style="text-align:center; padding:1.5rem 1rem; font-size:0.95rem; line-height:1.6;
+         background:rgba(0,0,0,0.05); border-top:1px solid rgba(0,0,0,0.1);">
+
+    <!-- Ikon Sosial Media (di atas alamat) -->
+    <div style="margin-bottom:0.6rem; display:flex; justify-content:center; gap:14px; align-items:center;">
+      <!-- Email -->
+      <a href="mailto:sekretariat.tripnas@kemnaker.go.id" title="Kirim Email"
+        style="display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+          style="width:34px; height:34px; fill:var(--icon-email);">
+          <path
+            d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm0 2v.01l8 5 8-5V6H4zm0 2.97V18h16V8.97l-8 5-8-5z" />
+        </svg>
+      </a>
+
+      <!-- Instagram -->
+      <a href="https://www.instagram.com/lkstripnas/" target="_blank" rel="noopener noreferrer" title="Instagram"
+        style="display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+          style="width:34px; height:34px; fill:var(--icon-instagram);">
+          <path
+            d="M7.75 2h8.5A5.76 5.76 0 0 1 22 7.75v8.5A5.76 5.76 0 0 1 16.25 22h-8.5A5.76 5.76 0 0 1 2 16.25v-8.5A5.76 5.76 0 0 1 7.75 2zm0 1.5A4.26 4.26 0 0 0 3.5 7.75v8.5A4.26 4.26 0 0 0 7.75 20.5h8.5A4.26 4.26 0 0 0 20.5 16.25v-8.5A4.26 4.26 0 0 0 16.25 3.5h-8.5zM12 7a5 5 0 1 1 0 10a5 5 0 0 1 0-10zm0 1.5a3.5 3.5 0 1 0 0 7a3.5 3.5 0 0 0 0-7zm5.75-2.5a1 1 0 1 1 0 2a1 1 0 0 1 0-2z" />
+        </svg>
+      </a>
+
+      <!-- TikTok -->
+      <a href="https://www.tiktok.com/@lkstripnas" target="_blank" rel="noopener noreferrer" title="TikTok"
+        style="display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+          style="width:34px; height:34px; fill:var(--icon-tiktok);">
+          <path
+            d="M12.75 2h2.5c.09 1.24.58 2.39 1.38 3.29c.92 1.03 2.17 1.65 3.55 1.79v2.57a7.74 7.74 0 0 1-4.04-1.15v6.82c0 3.65-2.96 6.68-6.63 6.68S2.88 19.97 2.88 16.32c0-3.65 2.96-6.68 6.63-6.68c.23 0 .45.01.68.04v2.63a4.1 4.1 0 0 0-.68-.05a4.08 4.08 0 1 0 4.1 4.09V2z" />
+        </svg>
+      </a>
+    </div>
+
+    <!-- Alamat -->
+    <div style="margin-bottom:0.6rem;">
       📍 <a href="https://maps.app.goo.gl/89uHb6s6rfUGrci58" target="_blank" rel="noopener noreferrer"
         style="color:inherit; text-decoration:underline; font-weight:600;">
         GRHA Kemnaker
       </a><br>
-      Jln. Veteran II, No.5, Gambir, Jakarta Pusat, DKI Jakarta - 10110<br>
-
-      📫 <a href="mailto:sekretariat.tripnas@kemnaker.go.id" style="color:inherit; text-decoration:underline;">
-        sekretariat.tripnas@kemnaker.go.id
-      </a>
+      Jln. Veteran II No.5, Gambir, Jakarta Pusat, DKI Jakarta – 10110
     </div>
 
-    <div>
+    <div style="margin-top:0.6rem;">
       Hak Cipta © 2025 <strong>LKS Tripartit Nasional</strong>
     </div>
   </footer>
@@ -63,7 +94,10 @@
     </div>
   </div>
   <script type="module" src="js/detail.js" defer></script>
-</body>
 
+  <!-- Tombol WhatsApp Floating -->
+  <img id="waButton" src="assets/halo-mobile.png" alt="Chat WhatsApp" class="wa-floating" title="Halo Sekretariat">
+
+</body>
 
 </html>

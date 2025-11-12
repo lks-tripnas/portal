@@ -61,24 +61,23 @@ if (themeToggle) {
   themeToggle.addEventListener("click", () => {
     document.body.classList.toggle("dark");
     localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light");
-
-    // ⬇️ 1. Ikon di sini dibalik
     themeToggle.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
   });
 
-  // LOGIKA BARU: Default ke Gelap
-  if (localStorage.getItem("theme") === "light") {
-    // Jika HANYA 'light' yang tersimpan, biarkan terang
-    document.body.classList.remove("dark");
-    // ⬇️ 2. Ikon di sini dibalik
-    themeToggle.textContent = "🌙";
-  } else {
-    // Jika 'dark' atau null (kunjungan pertama), set ke gelap
+  // === DEFAULT KE TERANG ===
+  const savedTheme = localStorage.getItem("theme");
+
+  if (savedTheme === "dark") {
     document.body.classList.add("dark");
-    // ⬇️ 3. Ikon di sini juga dibalik
     themeToggle.textContent = "☀️";
+  } else {
+    // jika null atau "light"
+    document.body.classList.remove("dark");
+    themeToggle.textContent = "🌙";
+    localStorage.setItem("theme", "light"); // simpan agar konsisten
   }
 }
+
 
 // === UTILITIES ===
 function showLoading() { document.getElementById("loadingOverlay").style.display = "flex"; }
@@ -242,5 +241,33 @@ if (backBtn) {
     e.preventDefault();
     // cukup gunakan history.back(), biarkan browser kembalikan posisi scroll
     history.back();
+  });
+}
+
+// === Floating WhatsApp Icon ===
+const waButton = document.getElementById("waButton");
+
+if (waButton) {
+  // Fungsi untuk update ikon sesuai ukuran layar
+  const updateIcon = () => {
+    waButton.src = window.innerWidth >= 900
+      ? "assets/halo-desktop.png"
+      : "assets/halo-mobile.png";
+  };
+
+  // Jalankan saat awal & saat resize
+  updateIcon();
+  window.addEventListener("resize", updateIcon);
+
+  // Klik langsung buka WhatsApp
+  waButton.addEventListener("click", () => {
+    window.open("https://wa.me/628111386611", "_blank");
+  });
+
+  // Efek muncul dari kiri ke kanan setelah 8 detik loading page
+  window.addEventListener("load", () => {
+    setTimeout(() => {
+      waButton.classList.add("show");
+    }, 1000); // 1 detik
   });
 }
