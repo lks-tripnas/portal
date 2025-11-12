@@ -1,4 +1,4 @@
-const CACHE_NAME = "tripnas-v9";
+const CACHE_NAME = "tripnas-v10";
 const OFFLINE_URL = "/offline.html";
 
 // === INSTALL ===
