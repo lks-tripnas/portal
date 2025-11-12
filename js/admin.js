@@ -482,19 +482,8 @@ async function submitForm() {
                 const data = await res.json();
 
                 if (data.secure_url) {
-                    // ✅ Optimasi hanya untuk kategori tertentu
-                    if (!["Struktur Organisasi", "Agenda", "Peraturan"].includes(category)) {
-                        const optimizedUrl = data.secure_url.replace(
-                            "/upload/",
-                            "/upload/f_auto,q_auto,dpr_auto,w_1024/"
-                        );
-                        imageUrls.push(optimizedUrl);
-                        console.log("Optimized:", optimizedUrl);
-                    } else {
-                        // Simpan apa adanya (tanpa optimasi)
-                        imageUrls.push(data.secure_url);
-                        console.log("Original (no optimize):", data.secure_url);
-                    }
+                    imageUrls.push(data.secure_url);
+                    console.log("Saved original:", data.secure_url);
                 }
             }
             showLoading(false);
