@@ -240,7 +240,7 @@ body.dark .search-toggle {
 /* ==== Tombol WhatsApp Floating ==== */
 .wa-floating {
     position: fixed;
-    bottom: 15px;
+    bottom: 10px;
     left: 10px;
     width: 40px;
     height: 40px;
@@ -720,7 +720,7 @@ body.dark #loadingOverlay {
     /* Sesuaikan posisi theme-toggle */
     .theme-toggle {
         right: 10px !important;
-        bottom: 15px !important;
+        bottom: 10px !important;
         width: 40px !important;
         height: 40px !important;
     }
@@ -866,4 +866,5 @@ footer a:focus-visible svg {
         margin-left: auto !important;
         margin-right: auto !important;
     }
+
 }
