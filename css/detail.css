@@ -73,7 +73,7 @@
 
     .theme-toggle {
         position: fixed;
-        bottom: 15px;
+        bottom: 10px;
         right: 10px;
         z-index: 2000;
         background: var(--card-light);
@@ -93,7 +93,7 @@
     /* ==== Tombol WhatsApp Floating ==== */
     .wa-floating {
         position: fixed;
-        bottom: 15px;
+        bottom: 10px;
         left: 10px;
         width: 40px;
         height: 40px;
@@ -530,4 +530,5 @@
         color: var(--btn-text);
         font-weight: 600;
         text-align: left;
+
     }
