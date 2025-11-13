@@ -139,6 +139,20 @@
         margin: auto;
     }
 
+    /* Tablet – sedikit lebih lebar */
+    @media (min-width: 768px) {
+        main {
+            max-width: 900px;
+        }
+    }
+
+    /* Desktop – lebih ramping tapi tetap lega */
+    @media (min-width: 800px) {
+        main {
+            max-width: 960px;
+        }
+    }
+
     .card {
         background: var(--card-light);
         margin-bottom: 1.2rem;
@@ -496,4 +510,24 @@
     footer a:focus-visible svg {
         outline: 2px solid var(--accent);
         outline-offset: 4px;
+    }
+
+    /* === Styling tabel untuk konten CKEditor (tidak mengganggu TinyMCE) === */
+    #detailContainer .ck-content table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 1.2rem 0;
+    }
+
+    #detailContainer .ck-content table th,
+    #detailContainer .ck-content table td {
+        border: 1px solid #ddd;
+        padding: 8px 10px;
+    }
+
+    #detailContainer .ck-content table th {
+        background: var(--accent);
+        color: var(--btn-text);
+        font-weight: 600;
+        text-align: left;
     }

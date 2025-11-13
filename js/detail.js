@@ -193,6 +193,7 @@ async function loadDetail() {
     // === RENDER ===
     detailContainer.innerHTML = `
       <div class="card">
+      <div class="ck-content">
         ${d.category !== "Struktur Organisasi" ? imageAtas : ""}
         <h2>${d.title}</h2>
         <div class="date">
@@ -203,7 +204,7 @@ async function loadDetail() {
         <div class="post-content">${d.content || ""}</div>
         ${docSection}
         ${d.category === "Struktur Organisasi" ? strukturImg : imageBawah}
-      </div>`;
+      </div></div>`;
   } catch (err) {
     hideLoading();
     showModal("Gagal memuat detail: " + err.message);

@@ -61,6 +61,20 @@ main {
     /* Hapus padding-top: 90px !important; 'sticky' akan menanganinya */
 }
 
+/* Tablet – sedikit lebih lebar */
+@media (min-width: 768px) {
+    main {
+        max-width: 900px;
+    }
+}
+
+/* Desktop – lebih ramping tapi tetap lega */
+@media (min-width: 800px) {
+    main {
+        max-width: 960px;
+    }
+}
+
 header h2 {
     margin: 0;
     font-family: 'Poppins', sans-serif;
@@ -821,7 +835,6 @@ footer a:hover svg {
 footer a:focus-visible svg {
     outline: 2px solid var(--accent);
     outline-offset: 4px;
-
 }
 
 /* Desktop natural wrap */

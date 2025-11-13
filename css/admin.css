@@ -333,7 +333,7 @@
         display: none;
         justify-content: center;
         align-items: center;
-        z-index: 3000;
+        z-index: 5000;
     }
 
     .spinner {
@@ -363,6 +363,31 @@
         justify-content: center;
         background: rgba(0, 0, 0, .5);
         z-index: 4000;
+    }
+
+    #confirmModal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, .5);
+        z-index: 4000;
+    }
+
+    #confirmModal.hidden {
+        display: none !important;
+    }
+
+    #confirmModal .modal-box {
+        max-width: 320px;
+    }
+
+    .modal-actions {
+        margin-top: 1rem;
+        display: flex;
+        gap: .5rem;
+        justify-content: center;
     }
 
     .modal-box {
@@ -441,4 +466,76 @@
     .color-btn:hover {
         transform: scale(1.1);
         box-shadow: 0 0 6px rgba(0, 0, 0, .3);
+    }
+
+    #strukturModal input {
+        padding: .45rem .7rem;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: .9rem;
+    }
+
+    #strukturModal.hidden {
+        display: none !important;
+    }
+
+    .member-row img:hover {
+        transform: scale(1.05);
+        transition: transform .2s ease;
+    }
+
+    #strukturModal {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* CKEditor table styling mirip LKS Tripnas */
+    .ck-content table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 1rem 0;
+    }
+
+    .ck-content table td,
+    .ck-content table th {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+
+    .ck-content table th {
+        background: var(--accent);
+        color: var(--btn-text);
+        font-weight: 600;
+        text-align: left;
+    }
+
+    .ck-content blockquote {
+        border-left: 4px solid var(--accent);
+        margin: 1rem;
+        padding: .5rem 1rem;
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    .ck-content iframe {
+        width: 100%;
+        height: 360px;
+        border-radius: 12px;
+    }
+
+    /* Tinggi minimum editor CKEditor */
+    .ck-editor__editable {
+        min-height: 350px !important;
+    }
+
+    /* Jika ingin terasa lebih lega */
+    @media (min-width: 600px) {
+        .ck-editor__editable {
+            min-height: 420px !important;
+        }
+    }
+
+    /* HILANGKAN SEMENTARA TOMBOL "TAMPILKAN STRUKTUR ORGANISASI" KETIKA PADA MENU STRUKTUR ORGANISASI */
+    #strukturBuilderWrap {
+        display: none !important;
     }

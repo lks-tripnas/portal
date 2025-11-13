@@ -687,10 +687,9 @@ if (waButton) {
         window.open("https://wa.me/628111386611", "_blank");
     });
 
-    // Efek muncul dari kiri ke kanan setelah 8 detik loading page
     window.addEventListener("load", () => {
         setTimeout(() => {
             waButton.classList.add("show");
-        }, 5000); // 5 detik
+        }, 6000); // 6 detik
     });
 }

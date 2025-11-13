@@ -74,6 +74,29 @@ window.closeModal = () => {
     document.getElementById("customModal").style.display = "none";
 };
 
+window.showConfirm = function (message) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById("confirmModal");
+        const msg = document.getElementById("confirmMessage");
+        const yes = document.getElementById("confirmYes");
+        const no = document.getElementById("confirmNo");
+
+        msg.textContent = message;
+        modal.classList.remove("hidden");
+        modal.style.display = "flex";
+
+        const cleanup = () => {
+            modal.style.display = "none";
+            modal.classList.add("hidden");
+            yes.onclick = null;
+            no.onclick = null;
+        };
+
+        yes.onclick = () => { cleanup(); resolve(true); };
+        no.onclick = () => { cleanup(); resolve(false); };
+    });
+};
+
 /* === LOGIN === */
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -280,7 +303,8 @@ window.editRow = async (id) => {
     document.getElementById("formTitle").textContent = "Edit Konten";
     document.getElementById("fJudul").value = d.title || "";
     document.getElementById("fKategori").value = d.category || "Berita";
-    tinymce.get("fIsi")?.setContent(d.content || "");
+    setEditorContent(d.content || "");
+
     document.getElementById("fStatus").value = d.status || "Aktif";
     document.getElementById("fSlug").value = d.slug || "";
 
@@ -332,7 +356,7 @@ function renderOldImages() {
 window.removeOldImage = (url) => { removedImages.add(url); renderOldImages(); };
 
 window.arsipkan = async (id) => {
-    if (!confirm("Yakin ingin mengarsipkan konten ini?")) return;
+    if (!(await showConfirm("Yakin ingin menghapus konten ini?"))) return;
     showLoading(true);
     try {
         const res = await fetch("https://backend-lks-tripnas.netlify.app/.netlify/functions/save-post", {
@@ -353,7 +377,7 @@ window.arsipkan = async (id) => {
 };
 
 window.hapus = async (id) => {
-    if (!confirm("Yakin ingin menghapus konten ini?")) return;
+    if (!(await showConfirm("Yakin ingin menghapus konten ini?"))) return;
     showLoading(true);
     try {
         const res = await fetch(`https://backend-lks-tripnas.netlify.app/.netlify/functions/delete-post?id=${id}`, {
@@ -378,7 +402,8 @@ function resetForm() {
         const el = document.getElementById(id);
         if (el) el.value = "";
     });
-    tinymce.get("fIsi")?.setContent("");
+    clearEditorContent();
+
     document.getElementById("fKategori").value = "Berita";
     document.getElementById("fStatus").value = "Aktif";
     const fFile = document.getElementById("fFile");
@@ -403,7 +428,8 @@ async function isSlugUsed(slug, currentId = null) {
 async function submitForm() {
     const title = document.getElementById("fJudul").value.trim();
     const category = document.getElementById("fKategori").value;
-    const content = tinymce.get("fIsi")?.getContent() || "";
+    const content = getEditorContent();
+
     const status = document.getElementById("fStatus").value;
     const slug = document.getElementById("fSlug").value.trim();
 
@@ -415,7 +441,7 @@ async function submitForm() {
         cloudCfg = cfg.cloudinary;
     } catch (err) {
         console.error("Gagal memuat konfigurasi Cloudinary:", err);
-        alert("Tidak dapat memuat konfigurasi Cloudinary.");
+        showModal("Tidak dapat memuat konfigurasi Cloudinary.");
         return;
     }
 
@@ -579,3 +605,196 @@ document.querySelectorAll(".color-btn").forEach(btn => {
     });
 });
 
+// === STRUKTUR ORGANISASI BUILDER ===
+const kategoriSelect = document.getElementById("fKategori");
+const builderWrap = document.getElementById("strukturBuilderWrap");
+const strukturModal = document.getElementById("strukturModal");
+const strukturList = document.getElementById("strukturList");
+
+builderWrap.style.display = "none";
+
+// Pantau login admin
+let isLoggedIn = false;
+onAuthStateChanged(auth, (user) => {
+    isLoggedIn = !!user;
+    if (!isLoggedIn) builderWrap.style.display = "none";
+});
+
+// Tampilkan tombol builder hanya jika login & kategori = Struktur Organisasi
+kategoriSelect.addEventListener("change", () => {
+    const selected = kategoriSelect.value;
+    builderWrap.style.display =
+        isLoggedIn && selected === "Struktur Organisasi" ? "block" : "none";
+});
+
+// === Tombol utama: buka modal builder ===
+document.getElementById("buatStrukturBtn").addEventListener("click", () => {
+    if (kategoriSelect.value !== "Struktur Organisasi") {
+        showModal("Pilih kategori 'Struktur Organisasi' terlebih dahulu.");
+        return;
+    }
+    strukturList.innerHTML = "";
+    addMemberRow();
+    strukturModal.classList.remove("hidden");
+});
+
+// === Tombol Tambah Anggota ===
+document.getElementById("addMemberBtnModal").addEventListener("click", addMemberRow);
+
+// === Tombol Muat dari Editor ===
+document.getElementById("loadFromEditorBtnModal").addEventListener("click", () => {
+    const html = getEditorContent();
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+    const rows = doc.querySelectorAll("tbody tr");
+
+    if (!rows.length) {
+        showModal("Tidak ada tabel struktur organisasi di editor.");
+        return;
+    }
+
+    strukturList.innerHTML = "";
+
+    rows.forEach((r, i) => {
+        const cells = r.querySelectorAll("td");
+        if (cells.length < 5) return;
+        const nama = cells[1].innerText.trim();
+        const jabatan = cells[2].innerText.trim();
+        const unsur = cells[3].innerText.trim();
+        const foto = cells[4].querySelector("img")?.src || "";
+
+        const rowHTML = `
+      <div class="member-row" style="border-bottom:1px solid #eee;margin-bottom:.7rem;padding-bottom:.7rem;">
+        <strong>Anggota ${i + 1}</strong><br>
+        <input type="text" placeholder="Nama" value="${nama}" style="width:100%;margin:.3rem 0;">
+        <input type="text" placeholder="Jabatan" value="${jabatan}" style="width:100%;margin:.3rem 0;">
+        <input type="text" placeholder="Unsur" value="${unsur}" style="width:100%;margin:.3rem 0;">
+        <div style="display:flex;gap:.5rem;align-items:center;margin-top:.3rem;">
+          <input type="text" placeholder="Link Foto" value="${foto}" style="flex:1;">
+          <button class="btn secondary" type="button" onclick="uploadFotoCloudinary(this)">📸 Upload</button>
+        </div>
+        <button class="btn secondary" style="margin-top:.3rem;" onclick="this.parentElement.remove()">Hapus</button>
+      </div>
+    `;
+        strukturList.insertAdjacentHTML("beforeend", rowHTML);
+    });
+
+    showModal("Struktur berhasil dimuat dari editor.");
+});
+
+// === Tombol Batal (tutup modal) ===
+document.getElementById("cancelStruktur").addEventListener("click", () => {
+    strukturModal.classList.add("hidden");
+});
+
+// === Tambah baris anggota ===
+function addMemberRow() {
+    const index = strukturList.querySelectorAll(".member-row").length + 1;
+    const rowHTML = `
+    <div class="member-row" style="border-bottom:1px solid #eee;margin-bottom:.7rem;padding-bottom:.7rem;">
+      <strong>Anggota ${index}</strong><br>
+      <input type="text" placeholder="Nama" style="width:100%;margin:.3rem 0;">
+      <input type="text" placeholder="Jabatan" style="width:100%;margin:.3rem 0;">
+      <input type="text" placeholder="Unsur" style="width:100%;margin:.3rem 0;">
+      <div style="display:flex;gap:.5rem;align-items:center;margin-top:.3rem;">
+        <input type="text" placeholder="Link Foto (otomatis diisi setelah upload)" style="flex:1;">
+        <button class="btn secondary" type="button" onclick="uploadFotoCloudinary(this)">📸 Upload</button>
+      </div>
+      <button class="btn secondary" style="margin-top:.3rem;" onclick="this.parentElement.remove()">Hapus</button>
+    </div>
+  `;
+    strukturList.insertAdjacentHTML("beforeend", rowHTML);
+}
+
+// === Upload ke Cloudinary ===
+window.uploadFotoCloudinary = async function (btn) {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.click();
+
+    input.onchange = async () => {
+        const file = input.files[0];
+        if (!file) return;
+        showLoading(true);
+
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", "lks_tripnas_unsigned");
+        formData.append("folder", "lks-tripnas-website/struktur");
+
+        try {
+            const res = await fetch("https://api.cloudinary.com/v1_1/dxkqflxae/image/upload", {
+                method: "POST",
+                body: formData,
+            });
+            const data = await res.json();
+
+            if (data.secure_url) {
+                const optimized = data.secure_url.replace("/upload/", "/upload/f_auto,q_auto,dpr_auto,w_300/");
+                btn.parentElement.querySelector("input").value = optimized;
+                btn.textContent = "✅ Sukses";
+                setTimeout(() => (btn.textContent = "📸 Upload"), 1500);
+            } else {
+                showModal("Upload gagal: " + (data.error?.message || "Tidak diketahui"));
+            }
+        } catch (err) {
+            showModal("Upload ke Cloudinary gagal: " + err.message);
+        } finally {
+            showLoading(false);
+        }
+    };
+};
+
+// === Simpan ke TinyMCE ===
+document.getElementById("saveStruktur").addEventListener("click", () => {
+    const rows = strukturList.querySelectorAll(".member-row");
+    if (!rows.length) return showModal("Belum ada anggota ditambahkan.");
+
+    let html = `
+  <div align="center">
+    <div style="overflow-x:auto;width:100%;border:1px solid #eee;">
+      <table style="width:100%;min-width:700px;border-collapse:collapse;font-family:Arial,sans-serif;" border="0">
+        <thead>
+          <tr style="background:black;color:white;">
+            <th style="padding:8px;">No.</th>
+            <th style="padding:8px;">Nama</th>
+            <th style="padding:8px;">Jabatan</th>
+            <th style="padding:8px;">Unsur</th>
+            <th style="padding:8px;">Foto</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+    rows.forEach((r, i) => {
+        const inputs = r.querySelectorAll("input");
+        const [nama, jabatan, unsur, foto] = Array.from(inputs).map(inp => inp.value.trim());
+        html += `
+      <tr>
+        <td style="border:1px solid #ddd;text-align:center;padding:8px;">${i + 1}</td>
+        <td style="border:1px solid #ddd;padding:8px;">${nama}</td>
+        <td style="border:1px solid #ddd;padding:8px;">${jabatan}</td>
+        <td style="border:1px solid #ddd;padding:8px;">${unsur}</td>
+        <td style="border:1px solid #ddd;text-align:center;padding:8px;">
+          ${foto
+                ? `<a href="${foto.replace('/upload/f_auto,q_auto,dpr_auto,w_300/', '/upload/')}" target="_blank">
+                  <img src="${foto}" style="max-width:90px;max-height:90px;object-fit:contain;border-radius:4px;background:#fff;cursor:zoom-in;">
+                </a>`
+                : "-"
+            }
+        </td>
+      </tr>`;
+    });
+
+    html += `
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+
+    setEditorContent(html);
+
+    strukturModal.classList.add("hidden");
+    showModal("Struktur organisasi berhasil dimasukkan ke editor!");
+});

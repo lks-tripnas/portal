@@ -52,6 +52,37 @@
             <option>Peraturan</option>
             <option>Struktur Organisasi</option>
           </select>
+
+          <!-- Tombol Buat Struktur Organisasi (hanya muncul bila kategori = Struktur Organisasi) -->
+          <div id="strukturBuilderWrap" style="margin-top:1rem; display:none;">
+            <button id="buatStrukturBtn" class="btn">☷ Tabel Struktur Organisasi</button>
+          </div>
+
+          <!-- Modal Buat Struktur -->
+          <div id="strukturModal" class="hidden" style="
+          position:fixed;inset:0;background:rgba(0,0,0,.55);
+          align-items:center;justify-content:center;z-index:4000;">
+
+            <div
+              style="background:#fff;padding:1.5rem 2rem;border-radius:14px;max-width:900px;width:95%;max-height:90vh;overflow:auto;">
+              <h3 style="margin-top:0;">Tambah / Edit Struktur Organisasi</h3>
+              <p style="opacity:.7;margin-top:-.3rem;">Tambahkan nama, jabatan, unsur, dan foto untuk setiap anggota.
+              </p>
+
+              <div id="strukturList"></div>
+
+              <div style="margin-top:1rem;text-align:center;">
+                <button id="addMemberBtnModal" class="btn">🔴 Tambah Anggota</button>
+                <button id="loadFromEditorBtnModal" class="btn secondary">🧊 Muat dari Editor</button>
+              </div>
+
+              <div class="right mt">
+                <button id="cancelStruktur" class="btn secondary">Batal</button>
+                <button id="saveStruktur" class="btn">Simpan ke Editor</button>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -176,30 +207,154 @@
   <div id="loadingOverlay">
     <div class="spinner"></div>
   </div>
+
   <div id="customModal">
     <div class="modal-box">
       <p id="modalMessage"></p><button onclick="closeModal()" class="btn">OK</button>
     </div>
   </div>
 
-  <!-- === TinyMCE Editor === -->
+  <div id="confirmModal" class="hidden">
+    <div class="modal-box">
+      <p id="confirmMessage"></p>
+
+      <div class="modal-actions">
+        <button id="confirmYes" class="btn">Ya</button>
+        <button id="confirmNo" class="btn secondary">Batal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- === TinyMCE utama === -->
   <script src="https://cdn.tiny.cloud/1/k5agrgsc9kksius35vr1ejeujyr03517tvrgdd3lvqiklocg/tinymce/7/tinymce.min.js"
     referrerpolicy="origin"></script>
+
   <script>
-    tinymce.init({
-      selector: '#fIsi',
-      menubar: false,
-      plugins: 'link lists code paste',
-      toolbar: 'undo redo | styles | bold italic underline | bullist numlist | link | removeformat | code',
-      height: 400,
-      branding: false,
-      paste_as_text: false,
-      content_style: "body { font-family:Poppins,sans-serif; font-size:14px; line-height:1.6; }"
+    let fallbackDone = false;
+
+    function startCKEditor() {
+      if (fallbackDone) return;
+      fallbackDone = true;
+
+      console.warn("⚠ TinyMCE limit — switching to CKEditor…");
+
+      // Hapus instance TinyMCE jika sempat muncul
+      if (window.tinymce && tinymce.activeEditor) {
+        try { tinymce.activeEditor.remove(); } catch (e) { }
+      }
+
+      const ck = document.createElement("script");
+      ck.src = "https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js";
+      ck.onload = () => {
+        ClassicEditor.create(document.querySelector('#fIsi'), {
+          toolbar: [
+            'undo', 'redo', '|',
+            'heading', '|',
+            'bold', 'italic', 'underline', '|',
+            'alignment:left', 'alignment:center', 'alignment:right', 'alignment:justify', '|',
+            'bulletedList', 'numberedList', '|',
+            'link', 'insertTable', '|',
+            'blockQuote', '|',
+            'removeFormat', 'fullscreen'
+          ],
+
+          table: {
+            contentToolbar: [
+              'tableColumn', 'tableRow', 'mergeTableCells',
+              'insertTable', 'deleteTable'
+            ]
+          },
+
+          table: {
+            contentToolbar: [
+              'tableColumn', 'tableRow', 'mergeTableCells',
+              'insertTable', 'deleteTable'
+            ]
+          },
+
+        }).then(editor => {
+          window.editorCK = editor;
+          console.log("CKEditor aktif.");
+        });
+      };
+      document.body.appendChild(ck);
+    }
+
+    function startTinyMCE() {
+      tinymce.init({
+        selector: '#fIsi',
+        menubar: false,
+        plugins: 'link lists table code paste autoresize',
+        toolbar: 'undo redo | styles | bold italic underline | bullist numlist | link | table | code | removeformat | fullscreen',
+        height: 400,
+        branding: false,
+        setup: function (editor) {
+          editor.on('init', function () {
+            setTimeout(() => {
+              // DETEKSI READ-ONLY MODE
+              const ro = editor.readonly ||
+                document.querySelector('.tox-notification--warning');
+
+              if (ro) {
+                console.warn("❌ TinyMCE READ ONLY — fallback aktif!");
+                startCKEditor();
+              }
+            }, 500);
+          });
+        }
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      setTimeout(() => {
+        if (window.tinymce) startTinyMCE();
+        else startCKEditor(); // CDN gagal
+      }, 500);
     });
   </script>
 
-  <script type="module" src="js/admin.js" defer></script>
-</body>
+  <script>
+    // global: cek editor aktif
+    window.getEditorContent = function () {
+      // CKEditor aktif?
+      if (window.editorCK) {
+        return window.editorCK.getData();
+      }
 
+      // TinyMCE aktif?
+      if (window.tinymce && tinymce.get("fIsi")) {
+        return tinymce.get("fIsi").getContent();
+      }
+
+      // fallback ke textarea langsung
+      return document.getElementById("fIsi").value;
+    };
+
+    window.setEditorContent = function (html) {
+      // CKEditor aktif
+      if (window.editorCK) {
+        window.editorCK.setData(html);
+        return;
+      }
+
+      // TinyMCE aktif
+      if (window.tinymce && tinymce.get("fIsi")) {
+        tinymce.get("fIsi").setContent(html);
+        return;
+      }
+
+      // fallback
+      document.getElementById("fIsi").value = html;
+    };
+
+    // Bersihkan editor
+    window.clearEditorContent = function () {
+      window.setEditorContent("");
+    };
+  </script>
+
+  <script type="module" src="js/admin.js" defer></script>
+
+</body>
 
 </html>
