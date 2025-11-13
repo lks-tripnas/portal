@@ -821,4 +821,36 @@ footer a:hover svg {
 footer a:focus-visible svg {
     outline: 2px solid var(--accent);
     outline-offset: 4px;
+
+}
+
+/* Desktop natural wrap */
+.site-title {
+    flex-wrap: wrap !important;
+}
+
+/* Saat sejajar dengan logo → teks wajib utuh */
+.site-title span {
+    white-space: nowrap !important;
+}
+
+/* FORCE: Jika layar < 1200px, logo dan teks SELALU vertikal */
+@media (max-width: 1200px) {
+    .site-title {
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        flex-wrap: nowrap !important;
+        gap: .4rem !important;
+    }
+
+    .site-title span {
+        display: block !important;
+        width: 100% !important;
+        white-space: normal !important;
+        text-align: center !important;
+        margin-top: .4rem !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
 }
