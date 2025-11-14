@@ -526,14 +526,14 @@
     /* Mobile: paksa tinggi editor jadi lebih pendek */
     @media (max-width: 600px) {
         .cke_contents {
-            height: 240px !important;
+            height: 360px !important;
             /* tingginya diatur di sini */
-            max-height: 240px !important;
+            max-height: 360px !important;
         }
 
         .cke_editable {
-            min-height: 240px !important;
-            max-height: 240px !important;
+            min-height: 360px !important;
+            max-height: 360px !important;
             overflow-y: auto !important;
             /* agar tetap bisa scroll */
         }
@@ -542,4 +542,5 @@
     /* HILANGKAN SEMENTARA TOMBOL "TAMPILKAN STRUKTUR ORGANISASI" KETIKA PADA MENU STRUKTUR ORGANISASI */
     #strukturBuilderWrap {
         display: none !important;
+
     }
