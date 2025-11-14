@@ -532,3 +532,20 @@
         text-align: left;
 
     }
+
+    .post-content iframe {
+        width: 100%;
+        max-width: 800px;
+        height: 420px;
+        border: none;
+        border-radius: 12px;
+        display: block;
+        margin: 1.2rem auto;
+    }
+
+    /* ==== Wrapper scrollable untuk tabel Struktur Organisasi ==== */
+    .struktur-table-scroll {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }

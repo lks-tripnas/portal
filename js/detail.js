@@ -201,10 +201,49 @@ async function loadDetail() {
           ${d.updatedAt ? `<div style="font-size:.7rem;opacity:.75;">diubah ${formatWIB(d.updatedAt)}</div>` : ""}
         </div>
         ${agendaSection}
-        <div class="post-content">${d.content || ""}</div>
+        <div class="struktur-table-scroll">
+            <div class="post-content">${d.content || ""}</div>
+        </div>
         ${docSection}
         ${d.category === "Struktur Organisasi" ? strukturImg : imageBawah}
       </div></div>`;
+
+    // === AUTO EMBED YOUTUBE (Opsi C) ===
+    (() => {
+      const area = document.querySelector(".post-content");
+      if (!area) return;
+
+      const links = area.querySelectorAll("a[href*='youtu']");
+      links.forEach(link => {
+        const url = link.href;
+        let videoId = null;
+
+        // Format pendek https://youtu.be/xxxx
+        if (url.includes("youtu.be/")) {
+          videoId = url.split("youtu.be/")[1].substring(0, 11);
+        }
+
+        // Format panjang https://www.youtube.com/watch?v=xxxx
+        else if (url.includes("watch?v=")) {
+          videoId = url.split("watch?v=")[1].substring(0, 11);
+        }
+
+        if (!videoId) return;
+
+        const iframe = document.createElement("iframe");
+        iframe.src = `https://www.youtube.com/embed/${videoId}`;
+        iframe.width = "100%";
+        iframe.height = "420";
+        iframe.style.border = "none";
+        iframe.style.borderRadius = "12px";
+        iframe.allow =
+          "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+        iframe.allowFullscreen = true;
+
+        link.replaceWith(iframe);
+      });
+    })();
+
   } catch (err) {
     hideLoading();
     showModal("Gagal memuat detail: " + err.message);

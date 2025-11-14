@@ -758,11 +758,11 @@ document.getElementById("saveStruktur").addEventListener("click", () => {
       <table style="width:100%;min-width:700px;border-collapse:collapse;font-family:Arial,sans-serif;" border="0">
         <thead>
           <tr style="background:black;color:white;">
-            <th style="padding:8px;">No.</th>
-            <th style="padding:8px;">Nama</th>
-            <th style="padding:8px;">Jabatan</th>
-            <th style="padding:8px;">Unsur</th>
-            <th style="padding:8px;">Foto</th>
+            <th style="text-align:center;padding:8px;">No.</th>
+            <th style="text-align:center;padding:8px;">Nama</th>
+            <th style="text-align:center;padding:8px;">Jabatan</th>
+            <th style="text-align:center;padding:8px;">Unsur</th>
+            <th style="text-align:center;padding:8px;">Foto</th>
           </tr>
         </thead>
         <tbody>`;

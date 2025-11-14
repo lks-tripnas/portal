@@ -231,52 +231,91 @@
 
   <script>
     let fallbackDone = false;
+    let editorCK = null;
 
     function startCKEditor() {
       if (fallbackDone) return;
       fallbackDone = true;
 
-      console.warn("⚠ TinyMCE limit — switching to CKEditor…");
+      console.warn("⚠ TinyMCE error — fallback ke CKEditor 4");
 
-      // Hapus instance TinyMCE jika sempat muncul
-      if (window.tinymce && tinymce.activeEditor) {
-        try { tinymce.activeEditor.remove(); } catch (e) { }
+      // Hapus instance TinyMCE jika ada
+      if (window.tinymce) {
+        const inst = tinymce.get("fIsi");
+        if (inst) {
+          try { inst.remove(); } catch (e) { }
+        }
       }
 
+      // Hapus UI TinyMCE yang masih tersisa
+      document.querySelectorAll('.tox-tinymce').forEach(el => el.remove());
+
+      // Pastikan textarea terlihat untuk CKEditor
+      document.getElementById("fIsi").style.visibility = "visible";
+
+      // Load CKEditor 4
       const ck = document.createElement("script");
-      ck.src = "https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js";
+      ck.src = "https://cdn.ckeditor.com/4.22.1/full/ckeditor.js";
+
       ck.onload = () => {
-        ClassicEditor.create(document.querySelector('#fIsi'), {
+        if (!window.CKEDITOR) {
+          console.error("❌ CKEditor gagal dimuat");
+          return;
+        }
+
+        editorCK = CKEDITOR.replace("fIsi", {
+          height: 420,
+          resize_enabled: true,
+
+          extraPlugins: 'justify,colorbutton,font,iframe,specialchar',
+
           toolbar: [
-            'undo', 'redo', '|',
-            'heading', '|',
-            'bold', 'italic', 'underline', '|',
-            'alignment:left', 'alignment:center', 'alignment:right', 'alignment:justify', '|',
-            'bulletedList', 'numberedList', '|',
-            'link', 'insertTable', '|',
-            'blockQuote', '|',
-            'removeFormat', 'fullscreen'
-          ],
 
-          table: {
-            contentToolbar: [
-              'tableColumn', 'tableRow', 'mergeTableCells',
-              'insertTable', 'deleteTable'
-            ]
-          },
+            { name: 'clipboard', items: ['Undo', 'Redo'] },
 
-          table: {
-            contentToolbar: [
-              'tableColumn', 'tableRow', 'mergeTableCells',
-              'insertTable', 'deleteTable'
-            ]
-          },
+            { name: 'styles', items: ['Format', 'Font', 'FontSize'] },
 
-        }).then(editor => {
-          window.editorCK = editor;
-          console.log("CKEditor aktif.");
+            { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'RemoveFormat'] },
+
+            { name: 'colors', items: ['TextColor', 'BGColor'] },
+
+            {
+              name: 'paragraph',
+              items: [
+                'NumberedList', 'BulletedList',
+                '-', 'Outdent', 'Indent',
+                '-', 'Blockquote',
+                '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'
+              ]
+            },
+
+            { name: 'links', items: ['Link', 'Unlink'] },
+
+            {
+              name: 'insert',
+              items: [
+                'Image',
+                'Iframe',           // <== Embed Youtube
+                'Table',
+                'HorizontalRule',
+                'SpecialChar'
+              ]
+            },
+
+            { name: 'tools', items: ['Maximize', 'Source'] }
+          ]
+        });
+
+
+        editorCK.on('instanceReady', () => {
+          console.log("✔ CKEditor 4 aktif sebagai fallback.");
         });
       };
+
+      ck.onerror = () => {
+        console.error("❌ Gagal memuat CKEditor dari CDN.");
+      };
+
       document.body.appendChild(ck);
     }
 
@@ -284,22 +323,29 @@
       tinymce.init({
         selector: '#fIsi',
         menubar: false,
-        plugins: 'link lists table code paste autoresize',
-        toolbar: 'undo redo | styles | bold italic underline | bullist numlist | link | table | code | removeformat | fullscreen',
-        height: 400,
         branding: false,
-        setup: function (editor) {
-          editor.on('init', function () {
-            setTimeout(() => {
-              // DETEKSI READ-ONLY MODE
-              const ro = editor.readonly ||
-                document.querySelector('.tox-notification--warning');
+        height: 400,
+        plugins: 'link lists table code paste autoresize',
+        toolbar:
+          'undo redo | bold italic underline removeformat | ' +
+          'bullist numlist | link | table | code | fullscreen',
 
-              if (ro) {
-                console.warn("❌ TinyMCE READ ONLY — fallback aktif!");
+        setup: function (editor) {
+          editor.on("init", function () {
+            setTimeout(() => {
+              const iframe = document.querySelector(".tox-edit-area iframe");
+              const warning = document.querySelector(".tox-notification--warning");
+
+              const tinyBroken =
+                editor.readonly ||
+                (warning && warning.innerText.includes("disabled")) ||
+                (iframe && iframe.contentDocument && !iframe.contentDocument.body.isContentEditable);
+
+              if (tinyBroken) {
+                console.warn("❌ TinyMCE read-only / limit — switch to CKEditor 4");
                 startCKEditor();
               }
-            }, 500);
+            }, 700);
           });
         }
       });
@@ -307,47 +353,31 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => {
-        if (window.tinymce) startTinyMCE();
-        else startCKEditor(); // CDN gagal
-      }, 500);
+        if (window.tinymce) {
+          startTinyMCE();
+        } else {
+          console.warn("❌ TinyMCE gagal dimuat — langsung CKEditor 4");
+          startCKEditor();
+        }
+      }, 400);
     });
-  </script>
 
-  <script>
-    // global: cek editor aktif
     window.getEditorContent = function () {
-      // CKEditor aktif?
-      if (window.editorCK) {
-        return window.editorCK.getData();
-      }
-
-      // TinyMCE aktif?
+      if (editorCK) return editorCK.getData();
       if (window.tinymce && tinymce.get("fIsi")) {
         return tinymce.get("fIsi").getContent();
       }
-
-      // fallback ke textarea langsung
       return document.getElementById("fIsi").value;
     };
 
     window.setEditorContent = function (html) {
-      // CKEditor aktif
-      if (window.editorCK) {
-        window.editorCK.setData(html);
-        return;
-      }
-
-      // TinyMCE aktif
+      if (editorCK) return editorCK.setData(html);
       if (window.tinymce && tinymce.get("fIsi")) {
-        tinymce.get("fIsi").setContent(html);
-        return;
+        return tinymce.get("fIsi").setContent(html);
       }
-
-      // fallback
       document.getElementById("fIsi").value = html;
     };
 
-    // Bersihkan editor
     window.clearEditorContent = function () {
       window.setEditorContent("");
     };
