@@ -531,11 +531,12 @@
     /* Jika ingin terasa lebih lega */
     @media (min-width: 600px) {
         .ck-editor__editable {
-            min-height: 420px !important;
+            min-height: 300px !important;
         }
     }
 
     /* HILANGKAN SEMENTARA TOMBOL "TAMPILKAN STRUKTUR ORGANISASI" KETIKA PADA MENU STRUKTUR ORGANISASI */
     #strukturBuilderWrap {
         display: none !important;
+
     }
