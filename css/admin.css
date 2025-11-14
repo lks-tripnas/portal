@@ -507,7 +507,7 @@
         background: var(--accent);
         color: var(--btn-text);
         font-weight: 600;
-        text-align: left;
+        text-align: center;
     }
 
     .ck-content blockquote {
@@ -523,20 +523,23 @@
         border-radius: 12px;
     }
 
-    /* Tinggi minimum editor CKEditor */
-    .ck-editor__editable {
-        min-height: 350px !important;
-    }
+    /* Mobile: paksa tinggi editor jadi lebih pendek */
+    @media (max-width: 600px) {
+        .cke_contents {
+            height: 240px !important;
+            /* tingginya diatur di sini */
+            max-height: 240px !important;
+        }
 
-    /* Jika ingin terasa lebih lega */
-    @media (min-width: 600px) {
-        .ck-editor__editable {
-            min-height: 300px !important;
+        .cke_editable {
+            min-height: 240px !important;
+            max-height: 240px !important;
+            overflow-y: auto !important;
+            /* agar tetap bisa scroll */
         }
     }
 
     /* HILANGKAN SEMENTARA TOMBOL "TAMPILKAN STRUKTUR ORGANISASI" KETIKA PADA MENU STRUKTUR ORGANISASI */
     #strukturBuilderWrap {
         display: none !important;
-
     }
