@@ -142,9 +142,10 @@ async function loadDetail() {
       imageAtas = `<img src="${d.imageUrl}" class="detail-img" onclick="showLightbox(this.src)">`;
     }
 
-    // === DOKUMEN (Peraturan) ===
+    // === DOKUMEN (Peraturan & Laporan Tahunan) ===
     let docSection = "";
-    if (d.category === "Peraturan" && Array.isArray(d.links) && d.links.length > 0) {
+    if ((d.category === "Peraturan" || d.category === "Laporan Tahunan") && Array.isArray(d.links) && d.links.length > 0) {
+
       const items = d.links.map(f => {
         const url = f.url || "#";
         const name = f.name || "Dokumen";

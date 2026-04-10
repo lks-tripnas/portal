@@ -141,7 +141,7 @@ function renderCard(id, d) {
                 ? `<img src="${d.imageUrl}" class="thumb" loading="lazy">` // ⬅️ Tambah di sini
                 : "";
 
-    if (d.category === "Peraturan") {
+    if (d.category === "Peraturan" || d.category === "Laporan Tahunan") {
         const totalDocs = Array.isArray(d.links) ? d.links.length : 0;
         return `
       <div class="card">

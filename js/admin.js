@@ -144,9 +144,10 @@ document.getElementById("fKategori").addEventListener("change", () => {
     const cat = document.getElementById("fKategori").value;
     uploadContainer.innerHTML = "";
 
-    if (cat === "Peraturan") {
-        // === PERATURAN: pakai link dokumen ===
+    if (cat === "Peraturan" || cat === "Laporan Tahunan") {
+        // === PERATURAN & LAPORAN TAHUNAN: pakai link dokumen ===
         uploadContainer.innerHTML = `
+
       <label>Tambahkan Link Dokumen</label>
       <div id="linkList"></div>
       <button id="addLinkBtn" type="button">+ Tambah Link</button>
@@ -235,7 +236,7 @@ function renderTable(data) {
       <td data-label="Kategori">${d.category || ""}</td>
       <td data-label="Tanggal">${formatTanggal(d.createdAt)}</td>
       <td data-label="Status"><span class="tag">${d.status || ""}</span></td>
-      <td data-label="Media">${d.category === "Peraturan"
+      <td data-label="Media">${d.category === "Peraturan" || d.category === "Laporan Tahunan"
                 ? (d.links?.length || 0) + " dokumen"
                 : d.category === "Struktur Organisasi"
                     ? (d.imageUrl ? `<a href="${d.imageUrl}" target="_blank">Lihat</a>` : "-")
@@ -318,12 +319,13 @@ window.editRow = async (id) => {
         }, 150);
     }
 
-    if (d.category === "Peraturan" && Array.isArray(d.links)) {
+    if ((d.category === "Peraturan" || d.category === "Laporan Tahunan") && Array.isArray(d.links)) {
         d.links.forEach(l => addLinkRow(l.name || "", l.url || ""));
         currentImages = [];
         removedImages.clear();
 
     } else {
+
         // === Periksa apakah data pakai images[] atau imageUrl tunggal ===
         if (Array.isArray(d.images) && d.images.length > 0) {
             currentImages = d.images.slice();
@@ -452,9 +454,10 @@ async function submitForm() {
 
     let payload = { title, category, content, status, slug, author: auth.currentUser.email };
 
-    if (category === "Peraturan") {
+    if (category === "Peraturan" || category === "Laporan Tahunan") {
         const rows = document.querySelectorAll("#linkList .link-row");
         const links = [];
+
         rows.forEach(r => {
             const name = r.children[0].value.trim();
             const url = r.children[1].value.trim();
